@@ -1,9 +1,23 @@
 package Datos;
 
-/**
- *
- * @author axelr
- */
-public class PiezaVampiro extends Pieza{
+import java.awt.Color;
+
+public class PiezaVampiro extends Pieza {
     
+    private static final int VIDA_BASE = 1;
+    private static final int SOLIDEZ_BASE = 1;
+    private static final int ATAQUE_BASE = 3;
+
+    public PiezaVampiro(Color color) {
+        super("Vampiro", color, VIDA_BASE, SOLIDEZ_BASE, ATAQUE_BASE);
+    }
+
+    @Override
+    public boolean esMovimientoValido(int r1, int c1, int r2, int c2) {
+        int dr = Math.abs(r1 - r2);
+        int dc = Math.abs(c1 - c2);
+        
+        // El Vampiro se mueve exactamente 1 casilla en cualquier dirección.
+        return dr <= 1 && dc <= 1 && (dr + dc > 0);
+    }
 }

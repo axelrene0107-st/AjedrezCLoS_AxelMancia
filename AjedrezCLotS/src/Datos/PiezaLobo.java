@@ -2,15 +2,23 @@ package Datos;
 
 import java.awt.Color;
 
-/**
- *
- * @author axelr
- */
+public class PiezaLobo extends Pieza {
+    
+    private static final int VIDA_BASE = 2;
+    private static final int SOLIDEZ_BASE = 0;
+    private static final int ATAQUE_BASE = 2;
 
-public class PiezaLobo extends Pieza{
-    
-    public PiezaLobo(String tipo, Color color) {
-        super(tipo, color);
+    public PiezaLobo(Color color) {
+        super("Lobo", color, VIDA_BASE, SOLIDEZ_BASE, ATAQUE_BASE);
     }
-    
+
+    @Override
+    public boolean esMovimientoValido(int r1, int c1, int r2, int c2) {
+        int dr = Math.abs(r1 - r2);
+        int dc = Math.abs(c1 - c2);
+        
+        // El Lobo se mueve hasta 2 casillas en cualquier dirección.
+        // Se valida el patrón: ambos cambios (filas y columnas) deben ser <= 2.
+        return dr <= 2 && dc <= 2 && (dr + dc > 0);
+    }
 }
