@@ -4,6 +4,7 @@ package Interfaz;
 import Datos.Jugador;
 import Datos.Jugadores;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
@@ -98,45 +99,26 @@ JPasswordField contrasena;
         JButton btnLogIn= new JButton(iconLogIn);//Creamos boton para iniciar sesion
         btnLogIn.setBounds(300, 400, 150, 40);//Le asignamos sus posisicion y dimension
         btnLogIn.setIcon(new ImageIcon(iconLogIn.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnLogIn.setBorder(null);
+        btnLogIn.setContentAreaFilled(false);
+        btnLogIn.setFocusPainted(false);
+        btnLogIn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         panelLI.add(btnLogIn);      
         //Accion del boton de log in
-        ActionListener accion1= new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                MenuPrincipal menuPa= new MenuPrincipal();
-                LogIn.this.setVisible(false);
-                menuPa.setVisible(true);
-                if(nombreCuenta.getText().isBlank()==true){
-                    JOptionPane.showMessageDialog(null, "Favor escriba un nombre.", "Error con Nombre", JOptionPane.WARNING_MESSAGE);
-                }else if(contrasena.getPassword().length==0){
-                    JOptionPane.showMessageDialog(null, "Favor escriba la contraseña.", "Error con Contraseña", JOptionPane.WARNING_MESSAGE);
-                }else if(listaJ.revisarNombres(nombreCuenta.getText())==false){//Revisa si el nombre escrito ya existe
-                    JOptionPane.showMessageDialog(null, "Ese nombre no esta registrado.", "Error con Nombre", JOptionPane.WARNING_MESSAGE);
-                }else if(listaJ.revisarPassword(contrasena.getPassword())==false){
-                    JOptionPane.showMessageDialog(null, "La contraseña ingresada es incorrecta", "Error con Contrseña", JOptionPane.WARNING_MESSAGE);
-                }else{
-                    MenuPrincipal menuP= new MenuPrincipal();
-                    LogIn.this.setVisible(false);
-                    menuP.setVisible(true);
-                }
-            }  
-        };
-        btnLogIn.addActionListener(accion1);
+        btnLogIn.addActionListener(e -> iniciarSesion());
         
         //Creacion del boton salir
         ImageIcon iconSalir= new ImageIcon("btnSalir.png");
         JButton btnSalir= new JButton();//Creamos boton para iniciar sesion
         btnSalir.setBounds(140, 400, 150, 40);//Le asignamos sus posicion y dimensiones
         btnSalir.setIcon(new ImageIcon(iconSalir.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnSalir.setBorder(null);
+        btnSalir.setContentAreaFilled(false);
+        btnSalir.setFocusPainted(false);
+        btnSalir.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         panelLI.add(btnSalir);
         //Accion del boton salir
-         ActionListener accion2= new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                LogIn.this.setVisible(false);
-            }
-        };       
-        btnSalir.addActionListener(accion2);
+        btnSalir.addActionListener(e -> setVisible(false));
      }
     
     
@@ -157,6 +139,36 @@ JPasswordField contrasena;
         contrasena.setForeground(Color.YELLOW);
         contrasena.setBackground(Color.DARK_GRAY);
         panelLI.add(contrasena);
+    }
+    
+    private void iniciarSesion() {
+        String nombre = nombreCuenta.getText().trim();
+        char[] pass = contrasena.getPassword();
+
+        if (nombre.isBlank()) {
+            JOptionPane.showMessageDialog(this, "Favor escriba un nombre.", "Error con Nombre", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        if (pass.length == 0) {
+            JOptionPane.showMessageDialog(this, "Favor escriba la contraseña.", "Error con Contraseña", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Verifica nombre y contraseña juntos
+        Jugador jugadorEncontrado = listaJ.buscarJugador(nombre, pass);
+
+        if (jugadorEncontrado == null) {
+            JOptionPane.showMessageDialog(this, "Nombre o contraseña incorrectos.", "Error de autenticación", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // ✅ Inicia sesión con éxito
+        JOptionPane.showMessageDialog(this, "¡Bienvenido, " + jugadorEncontrado.getNombre() + "!", "Inicio de Sesión Exitoso", JOptionPane.INFORMATION_MESSAGE);
+        this.setVisible(false);
+
+        // Abre el menú principal
+        MenuPrincipal menu = new MenuPrincipal(jugadorEncontrado, listaJ);
+        menu.setVisible(true);
     }
 
     @Override
