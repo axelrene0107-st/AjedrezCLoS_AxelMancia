@@ -1,50 +1,63 @@
-//Clase para guardar jugadores 
 package Datos;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
-/**
- *
- * @author axelr
- */
 public class Jugadores {
-    public ArrayList<Jugador> Jugadores;
-    
-    public Jugadores(){
-        Jugadores= new ArrayList<>();
+
+    private ArrayList<Jugador> jugadores;
+
+    public Jugadores() {
+        jugadores = new ArrayList<>();
     }
-    
-    //Metodo para guardar objetos jugador en el ArrayList
-    public void guardarJugadores(Jugador player){
-        Jugadores.add(player);
+
+    // ✅ Agrega un jugador nuevo
+    public void guardarJugadores(Jugador player) {
+        jugadores.add(player);
     }
-    
-    //Metodo para eliminar objetos jugador del Arraylist
-    public void eliminarJugadores(Jugador player){
-        Jugadores.remove(player);
+
+    // ✅ Elimina un jugador
+    public void eliminarJugadores(Jugador player) {
+        jugadores.remove(player);
     }
-    
-    //Metodo para revisar si el nombre que se da como parametro existe.
-    public boolean revisarNombres(String nombre){
-        for(Jugador player: Jugadores){
-            if(player.getNombre().equals(nombre)){
-                System.out.println("Encontrado");
+
+    // ✅ Revisa si existe un nombre de usuario
+    public boolean revisarNombres(String nombre) {
+        for (Jugador player : jugadores) {
+            if (player.getNombre().equalsIgnoreCase(nombre)) {
+                System.out.println("Nombre encontrado: " + nombre);
                 return true;
             }
         }
-        System.out.println("No encontrado");
+        System.out.println("Nombre no encontrado: " + nombre);
         return false;
     }
-    
-    public boolean revisarPassword(char[] contrasena){
-        for(Jugador player: Jugadores){
-            if(player.getPassword().equals(contrasena)){
-                System.out.println("Encontrado");
+
+    // ⚠️ Comparar contraseñas correctamente
+    public boolean revisarPassword(char[] contrasena) {
+        for (Jugador player : jugadores) {
+            if (Arrays.equals(player.getPassword(), contrasena)) {
+                System.out.println("Contraseña encontrada");
                 return true;
             }
         }
-        System.out.println("No encontrado");
+        System.out.println("Contraseña no encontrada");
         return false;
     }
-    
+
+    // ✅ Busca jugador por nombre y contraseña
+    public Jugador buscarJugador(String nombre, char[] contrasena) {
+        for (Jugador player : jugadores) {
+            if (player.getNombre().equalsIgnoreCase(nombre) &&
+                Arrays.equals(player.getPassword(), contrasena)) {
+                return player;
+            }
+        }
+        return null; // No encontrado
+    }
+
+    // ✅ Devuelve toda la lista (si necesitas usarla en otra clase)
+    public ArrayList<Jugador> getLista() {
+        return jugadores;
+    }
 }

@@ -18,37 +18,53 @@ public class Partida extends JFrame {
     private JPanel panel;
     private JButton[][] casillas;
     private Pieza[][] tableroLogico;    
+    private JPanel panelPiezasRojasPerdidas;
+    private JPanel panelPiezasAzulesPerdidas;
+    private JTextArea areaMensajes;
+
+
 
     // Variables de control de juego
     private JButton casillaSeleccionada = null;
     private int selectedRow = -1;
     private int selectedCol = -1;
-    private Color turnoActual = Color.RED; // 🔴 El juego comienza con el jugador ROJO
+    private Color turnoActual = Color.BLUE; 
+    JButton btnRendirse;
     
     private Ruleta ruleta; // Vuelve al JDialog
     private String piezaPermitida = null;
     
     private int girosDisponiblesRojo = 1;
     private int girosDisponiblesAzul = 1;
+    
+    private JButton btnHabilidadEspecial;
+    private boolean modoInvocacion = false;
+    private java.util.List<Point> casillasInvocacion = null;
+    private boolean modoDrenaje = false;
+    private java.util.List<Point> casillasDrenaje = null;
+
 
     // Íconos de las piezas (se asume que están configurados para 6 imágenes)
     private ImageIcon muerteIcon;
     private ImageIcon vampiroIcon;
     private ImageIcon loboIcon;
+    private ImageIcon zombieIcon;
     private ImageIcon muerteClaraIcon;
     private ImageIcon vampiroClaraIcon;
     private ImageIcon loboClaraIcon;
+    private ImageIcon zombieClaraIcon;
     
     private static final Color COLOR_MOVIMIENTO_VALIDO = new Color(50, 200, 50, 100); // Verde semi-transparente
     private static final Color COLOR_ATAQUE_VALIDO = new Color(200, 50, 50, 100);    // Rojo semi-transparente
+    private static final Color COLOR_ATAQUE_LARGO = new Color(160, 50, 200, 120); // Morado semitransparente
     private static final Color COLOR_SELECCIONADO = Color.YELLOW;
 
     public Partida() {
         setTitle("Vampire Wargame Chess");
-        setSize(700, 700);
+        setSize(950, 800);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setMinimumSize(new Dimension(700, 700));
+        setMinimumSize(new Dimension(950, 800));
         setLayout(null);
 
         tableroLogico = new Pieza[SIZE][SIZE];
@@ -75,10 +91,12 @@ public class Partida extends JFrame {
         muerteIcon = cargarYRedimensionarIcono("Muerte.png", iconSize);
         vampiroIcon = cargarYRedimensionarIcono("Vampiro.png", iconSize);
         loboIcon = cargarYRedimensionarIcono("Lobo.png", iconSize);
+        zombieIcon = cargarYRedimensionarIcono("Zombie.png", iconSize); // 🧟‍♂️
         
         muerteClaraIcon = cargarYRedimensionarIcono("Muerte_Blanco.png", iconSize);
         vampiroClaraIcon = cargarYRedimensionarIcono("Vampiro_Blanco.png", iconSize);
         loboClaraIcon = cargarYRedimensionarIcono("Lobo_Blanco.png", iconSize);
+        zombieClaraIcon = cargarYRedimensionarIcono("Zombie_Blanco.png", iconSize); // 🧟‍♀️
     }
 
     private ImageIcon cargarYRedimensionarIcono(String fileName, int size) {
@@ -109,21 +127,21 @@ public class Partida extends JFrame {
 
         // 🔴 JUGADOR ROJO (6 piezas: 2 Muerte, 2 Vampiro, 2 Lobo)
         // Fila 0
-        tableroLogico[0][0] = new PiezaMuerte(Color.RED);
+        tableroLogico[0][0] = new PiezaLobo(Color.RED);
         tableroLogico[0][1] = new PiezaVampiro(Color.RED);
-        tableroLogico[0][2] = new PiezaLobo(Color.RED);
-        tableroLogico[0][3] = new PiezaLobo(Color.RED);
+        tableroLogico[0][2] = new PiezaMuerte(Color.RED);
+        tableroLogico[0][3] = new PiezaMuerte(Color.RED);
         tableroLogico[0][4] = new PiezaVampiro(Color.RED);
-        tableroLogico[0][5] = new PiezaMuerte(Color.RED);
+        tableroLogico[0][5] = new PiezaLobo(Color.RED);
         
         // 🔵 JUGADOR AZUL (Color.BLUE)
         // Fila 5
-        tableroLogico[5][0] = new PiezaMuerte(Color.BLUE);
+        tableroLogico[5][0] = new PiezaLobo(Color.BLUE);
         tableroLogico[5][1] = new PiezaVampiro(Color.BLUE);
-        tableroLogico[5][2] = new PiezaLobo(Color.BLUE);
-        tableroLogico[5][3] = new PiezaLobo(Color.BLUE);
+        tableroLogico[5][2] = new PiezaMuerte(Color.BLUE);
+        tableroLogico[5][3] = new PiezaMuerte(Color.BLUE);
         tableroLogico[5][4] = new PiezaVampiro(Color.BLUE);
-        tableroLogico[5][5] = new PiezaMuerte(Color.BLUE);
+        tableroLogico[5][5] = new PiezaLobo(Color.BLUE);
         
         actualizarTableroGUI();
     }
@@ -135,12 +153,14 @@ public class Partida extends JFrame {
                 case "Muerte": return muerteIcon;
                 case "Vampiro": return vampiroIcon;
                 case "Lobo": return loboIcon;
+                case "Zombie": return zombieIcon; // 🧟‍♂️
             }
         } else if (pieza.color.equals(Color.BLUE)) {
             switch (pieza.getTipo()) {
                 case "Muerte": return muerteClaraIcon;
                 case "Vampiro": return vampiroClaraIcon;
                 case "Lobo": return loboClaraIcon;
+                case "Zombie": return zombieClaraIcon; // 🧟‍♀️
             }
         }
         return new ImageIcon();
@@ -171,21 +191,44 @@ public class Partida extends JFrame {
     
     private void iniciarComponentes() {
         colocarPanel();
-        colocarLabels();    
-        colocarTablero();    
+        colocarBotonRendicion(); 
+        colocarBotonHabilidad();
+        colocarPanelesPiezasPerdidas();
+        colocarAreaMensajes();
+        colocarTablero();
+        colocarLabels();          
+        
     }
 
     private void colocarPanel() {
         panel = new JPanel();
-        panel.setBounds(0, 0, 700, 700);
+        panel.setBounds(0, 0, 950, 800);
         panel.setLayout(null);
         add(panel);
     }
+    
+    private void colocarPanelesPiezasPerdidas() {
+        // Panel izquierdo (jugador azul / blancas)
+        panelPiezasAzulesPerdidas = new JPanel();
+        panelPiezasAzulesPerdidas.setLayout(new GridLayout(6, 1, 5, 5));
+        panelPiezasAzulesPerdidas.setBackground(new Color(30, 30, 60));
+        panelPiezasAzulesPerdidas.setBounds(30, 130, 100, 500);
+        panel.add(panelPiezasAzulesPerdidas);
+
+        // Panel derecho (jugador rojo / negras)
+        panelPiezasRojasPerdidas = new JPanel();
+        panelPiezasRojasPerdidas.setLayout(new GridLayout(6, 1, 5, 5));
+        panelPiezasRojasPerdidas.setBackground(new Color(60, 20, 20));
+        panelPiezasRojasPerdidas.setBounds(820, 130, 100, 500);
+        panel.add(panelPiezasRojasPerdidas);
+    }
+
 
     private void colocarTablero() {
         int boardSize = TILE_SIZE * SIZE;
-        int posX = (700 - boardSize) / 2;
-        int posY = (700 - boardSize) / 2 - 30;
+        int posX = (950 - boardSize) / 2;
+        int posY = (800 - boardSize) / 2 - 60;
+
 
         JPanel tablero = new JPanel(new GridLayout(SIZE, SIZE));
         tablero.setBounds(posX, posY, boardSize, boardSize);
@@ -224,22 +267,109 @@ public class Partida extends JFrame {
     }
 
     private void colocarLabels() {
-        // Asumiendo que "Fondo4.jpg" y "Logo.png" existen
-        ImageIcon iconFondo = new ImageIcon("Fondo4.jpg"); 
-        JLabel fondo = new JLabel(new ImageIcon(iconFondo.getImage().getScaledInstance(700, 700, Image.SCALE_SMOOTH)));
-        fondo.setBounds(0, 0, 700, 700);
-        panel.add(fondo);
-        panel.setComponentZOrder(fondo, panel.getComponentCount() - 1);
-
         ImageIcon iconLogo = new ImageIcon("Logo.png");
         JLabel logo = new JLabel(new ImageIcon(iconLogo.getImage().getScaledInstance(200, 130, Image.SCALE_SMOOTH)));
-        logo.setBounds(240, 550, 200, 130);
+        logo.setBounds(440, 750, 200, 130);
         panel.add(logo);
+        
+        ImageIcon iconFondo = new ImageIcon("Fondo4.jpg"); 
+        JLabel fondo = new JLabel(new ImageIcon(iconFondo.getImage().getScaledInstance(950, 800, Image.SCALE_SMOOTH)));
+        fondo.setBounds(0, 0, 950, 800);
+        panel.add(fondo);
+        panel.setComponentZOrder(fondo, panel.getComponentCount() - 1);
     }
+    
+    private void colocarBotonHabilidad() {
+        ImageIcon iconBtnEspecial= new ImageIcon("BtnEspecial.png");
+        btnHabilidadEspecial= new JButton(iconBtnEspecial);//Creamos boton para iniciar sesion
+        btnHabilidadEspecial.setBounds(270, 20, 200, 70);//Le asignamos sus posisicion y dimension
+        btnHabilidadEspecial.setIcon(new ImageIcon(iconBtnEspecial.getImage().getScaledInstance(270, 190, Image.SCALE_SMOOTH)));
+        btnHabilidadEspecial.addActionListener(e -> activarHabilidadEspecial());
+        btnHabilidadEspecial.setEnabled(false);
+        panel.add(btnHabilidadEspecial);
+    }
+    
+    private void colocarBotonRendicion() {       
+        ImageIcon iconBtnRendirse= new ImageIcon("BtnRendirse.png");
+        btnRendirse= new JButton(iconBtnRendirse);//Creamos boton para iniciar sesion
+        btnRendirse.setBounds(480, 20, 200, 70);//Le asignamos sus posisicion y dimension
+        btnRendirse.setIcon(new ImageIcon(iconBtnRendirse.getImage().getScaledInstance(270, 220, Image.SCALE_SMOOTH)));
+        btnRendirse.addActionListener(e -> rendirse());
+        panel.add(btnRendirse);
+    }
+
+    private void colocarAreaMensajes() {
+        areaMensajes = new JTextArea();
+        areaMensajes.setEditable(false);
+        areaMensajes.setFont(new Font("Consolas", Font.PLAIN, 12));
+        areaMensajes.setForeground(Color.YELLOW);
+        areaMensajes.setBackground(new Color(60, 20, 20));
+        areaMensajes.setLineWrap(true);
+        areaMensajes.setWrapStyleWord(true);
+
+        JScrollPane scroll = new JScrollPane(areaMensajes);
+        scroll.setBounds(0, 0, 230, 100);
+        scroll.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(Color.DARK_GRAY, 1),
+            "MENSAJES",
+            javax.swing.border.TitledBorder.CENTER,
+            javax.swing.border.TitledBorder.TOP,
+            new Font("Perpetua Titling MT", Font.BOLD, 13),
+            Color.BLACK
+            ));
+
+        panel.add(scroll);
+    }
+    
+    private void registrarMensaje(String mensaje) {
+        areaMensajes.append(mensaje + "\n");
+        areaMensajes.setCaretPosition(areaMensajes.getDocument().getLength());
+    }
+
+
     
 
     // --- LÓGICA DE MOVIMIENTO Y COMBATE (ACTUALIZADA) ---
     private void manejarClicCasilla(int targetRow, int targetCol) {
+        if (modoInvocacion && casillasInvocacion != null) {
+            for (Point p : casillasInvocacion) {
+                if (p.x == targetRow && p.y == targetCol) {
+                    Pieza pieza = tableroLogico[selectedRow][selectedCol];
+                    colocarZombie(pieza, targetRow, targetCol);
+                    return;
+                }
+            }
+            JOptionPane.showMessageDialog(this, "Selecciona una casilla verde válida para colocar el zombie.");
+            return;
+        }
+        
+        // 🩸 Si estamos en modo drenaje del Vampiro
+        if (modoDrenaje && casillasDrenaje != null) {
+            for (Point p : casillasDrenaje) {
+                if (p.x == targetRow && p.y == targetCol) {
+                    Pieza vampiro = tableroLogico[selectedRow][selectedCol];
+                    Pieza enemigo = tableroLogico[p.x][p.y];
+
+                    vampiro.usarHabilidadEspecial(enemigo);
+                    JOptionPane.showMessageDialog(this,
+                        "🩸 El Vampiro drenó vida de " + enemigo.getTipo() + "!");
+
+                    deseleccionarPieza();
+                    limpiarResaltados();
+                    modoDrenaje = false;
+                    casillasDrenaje = null;
+
+                    actualizarTableroGUI();
+                    verificarFinDeJuego();
+                    cambiarTurno();
+                    return;
+                }   
+            }
+
+            JOptionPane.showMessageDialog(this, "Selecciona una casilla morada válida para drenar.");
+            return;
+        }
+
         
         Pieza piezaEnDestino = tableroLogico[targetRow][targetCol];
         JButton targetCasilla = casillas[targetRow][targetCol];
@@ -279,10 +409,15 @@ public class Partida extends JFrame {
                     realizarMovimiento(targetRow, targetCol, piezaOrigen);
                     cambiarTurno();
                 
-                } else if (targetColor.equals(COLOR_ATAQUE_VALIDO)) {
-                    // Ataque a pieza ENEMIGA
-                    // NOTA: piezaEnDestino NUNCA será null si el color es COLOR_ATAQUE_VALIDO
-                    realizarAtaque(piezaOrigen, piezaEnDestino, targetRow, targetCol);
+                } else if (targetColor.equals(COLOR_ATAQUE_VALIDO)|| (piezaOrigen.getTipo().equals("Muerte") && targetCasilla.getBackground().equals(new Color(180, 0, 180, 120)))) {
+                    // 🔮 Determinar daño según tipo de ataque
+                    int daño = piezaOrigen.getAtaque();
+                    
+                    if (piezaOrigen.getTipo().equals("Muerte") && targetCasilla.getBackground().equals(new Color(180, 0, 180, 120))) {
+                        daño = 2; // daño reducido
+                    }
+
+                    realizarAtaquePersonalizado(piezaOrigen, piezaEnDestino, targetRow, targetCol, daño);
                     cambiarTurno();
 
                 } else if (piezaEnDestino != null && piezaEnDestino.color.equals(piezaOrigen.color)) {
@@ -313,11 +448,13 @@ public class Partida extends JFrame {
     
         // 3. Resaltar la pieza seleccionada y MOSTRAR LOS RANGOS
         casilla.setBorder(new LineBorder(COLOR_SELECCIONADO, 3, true));
-    
+        
         // Muestra los rangos de movimiento y ataque
         mostrarMovimientosValidos(row, col); 
+        registrarMensaje("Seleccionada: " + tableroLogico[row][col].getTipo() + " en (" + row + ", " + col + ")");
+        
+        btnHabilidadEspecial.setEnabled(tableroLogico[row][col].puedeUsarHabilidadEspecial());
 
-        System.out.println("Seleccionada: " + tableroLogico[row][col].getTipo() + " en (" + row + ", " + col + ")");
     }   
 
 
@@ -328,7 +465,9 @@ public class Partida extends JFrame {
         casillaSeleccionada = null;
         selectedRow = -1;
         selectedCol = -1;
-        System.out.println("Selección cancelada.");
+        registrarMensaje("Selección cancelada.");   
+        btnHabilidadEspecial.setEnabled(false);
+
     }
     
     
@@ -340,47 +479,67 @@ public class Partida extends JFrame {
         // 2. Deselecciona y actualiza la GUI
         deseleccionarPieza();
         actualizarTableroGUI();
-        System.out.println("Movimiento completado a: (" + targetRow + ", " + targetCol + ")");
+        registrarMensaje("Movimiento completado a: (" + targetRow + ", " + targetCol + ")");
     }
     
     private void realizarAtaque(Pieza atacante, Pieza defensor, int targetRow, int targetCol) {
-        // 1. El atacante hace daño al defensor
-        int daño = atacante.getAtaque();
-        defensor.recibirDaño(daño);
-        
-        System.out.println(atacante.getTipo() + " (" + atacante.color.equals(Color.RED) + ") ataca a " + defensor.getTipo() + " (Daño: " + daño + ")");
-        System.out.println("Defensor vida/solidez restante: " + defensor.getVida() + "/" + defensor.getSolidez());
+        int dr = Math.abs(selectedRow - targetRow);
+        int dc = Math.abs(selectedCol - targetCol);
 
-        // 2. Si el defensor muere, el atacante ocupa su lugar
-        if (!defensor.estaViva()) {
-            System.out.println("¡" + defensor.getTipo() + " ha sido derrotado!");
-            
-            // Mover el atacante a la posición del defensor
-            tableroLogico[targetRow][targetCol] = atacante;
-            tableroLogico[selectedRow][selectedCol] = null; // Limpiar origen
-            
-            // Opcional: Implementar lógica de fin de partida aquí
-        } else {
-            // Si el defensor sobrevive, solo se limpia la selección del atacante (no hay movimiento)
-            System.out.println("El defensor sobrevivió al ataque.");
+        int daño = atacante.getAtaque();
+
+        // 💀 Si la pieza es Muerte y el ataque es a distancia (2 casillas)
+        if (atacante.getTipo().equals("Muerte") && (dr == 2 || dc == 2)) {
+            daño = 2; // Daño reducido por ataque mágico largo
+            registrarMensaje("⚡ Ataque mágico a distancia (daño reducido a 2).");
         }
-        
-        // 3. Deselecciona y actualiza la GUI
+
+        // Aplica el daño
+        defensor.recibirDaño(daño);
+
+        registrarMensaje(atacante.getTipo() + " (" + (atacante.color.equals(Color.RED) ? "NEGRO" : "BLANCO") + 
+                            ") ataca a " + defensor.getTipo() + " (Daño: " + daño + ")");
+        registrarMensaje("Defensor vida/solidez restante: " + defensor.getVida() + "/" + defensor.getSolidez());
+
+        // Si el defensor muere, el atacante ocupa su lugar
+        if (!defensor.estaViva()) {
+            System.out.println("💀 ¡" + defensor.getTipo() + " ha sido derrotado!");
+            tableroLogico[targetRow][targetCol] = atacante;
+            tableroLogico[selectedRow][selectedCol] = null;
+        } else {
+            registrarMensaje("El defensor sobrevivió al ataque.");
+        }
+
         deseleccionarPieza();
         actualizarTableroGUI();
-        
         verificarFinDeJuego();
     }
     
+    private void realizarAtaquePersonalizado(Pieza atacante, Pieza defensor, int targetRow, int targetCol, int daño) {
+        defensor.recibirDaño(daño);
+
+        registrarMensaje(atacante.getTipo() + " realiza ataque (" + daño + " daño) sobre " + defensor.getTipo());
+
+        if (!defensor.estaViva()) {
+            registrarMensaje("💀 " + defensor.getTipo() + " ha sido derrotado.");
+            tableroLogico[targetRow][targetCol] = atacante;
+            tableroLogico[selectedRow][selectedCol] = null;
+            registrarPiezaPerdida(defensor);
+        }
+
+        deseleccionarPieza();
+        actualizarTableroGUI();
+        verificarFinDeJuego();
+    }
+
+    
     private Color obtenerColorBaseCasilla(int row, int col) {
-    Color colorClaro = new Color(200, 180, 150); 
-    Color colorOscuro = new Color(60, 30, 30);
-    return ((row + col) % 2 == 0) ? colorClaro : colorOscuro;
+        Color colorClaro = new Color(200, 180, 150); 
+        Color colorOscuro = new Color(60, 30, 30);
+        return ((row + col) % 2 == 0) ? colorClaro : colorOscuro;
     }
     
         // --- LÓGICA DE VALIDACIÓN DE RUTA ---
-    
-    // --- LÓGICA DE VALIDACIÓN DE RUTA (CORREGIDA, con control de límites) ---
     private boolean estaRutaBloqueada(int r1, int c1, int r2, int c2) {
         // 1. Calcula la dirección del movimiento (+1, 0, o -1)
         int dr = Integer.compare(r2, r1); // Dirección en fila
@@ -471,14 +630,106 @@ public class Partida extends JFrame {
                     targetCasilla.setBackground(COLOR_MOVIMIENTO_VALIDO);
                 
                 } else if (!piezaEnDestino.color.equals(piezaOrigen.color)) {
-                    // Casilla con enemigo: Ataque válido
-                    targetCasilla.setBackground(COLOR_ATAQUE_VALIDO);
-                
-                } 
-                // Si la piezaEnDestino es ALIADA, simplemente no se resalta (no es un movimiento/ataque válido).
+                    int dr = Math.abs(startRow - targetRow);
+                    int dc = Math.abs(startCol - targetCol);
+
+                    // 🩸 Cuerpo a cuerpo (todas las piezas)
+                    if (dr <= 1 && dc <= 1) {
+                        targetCasilla.setBackground(COLOR_ATAQUE_VALIDO);
+                    }
+                    // 💀 Ataque mágico a distancia (solo la Muerte)
+                    else if (piezaOrigen.getTipo().equals("Muerte") && (dr == 2 || dc == 2 || dr == dc && dr == 2)) {
+                    // color morado semitransparente
+                    targetCasilla.setBackground(new Color(180, 0, 180, 120));
+                    }
+                }
             }
         }
     }
+    
+    private void activarHabilidadEspecial() {
+        if (casillaSeleccionada == null) {
+            JOptionPane.showMessageDialog(this, "Selecciona una pieza primero.");
+            return;
+        }
+
+        Pieza pieza = tableroLogico[selectedRow][selectedCol];
+
+        if (!pieza.color.equals(turnoActual)) {
+            JOptionPane.showMessageDialog(this, "No puedes usar habilidades con piezas enemigas.");
+            return;
+        }
+
+        if (!pieza.puedeUsarHabilidadEspecial()) {
+            JOptionPane.showMessageDialog(this, pieza.getTipo() + " no tiene habilidad especial.");
+            return;
+        }
+
+        // 🔹 Si la pieza es una Muerte, intenta invocar un zombie
+        if (pieza instanceof Datos.PiezaMuerte) {
+            invocarZombie(pieza);
+            return;
+        }
+
+        // 🔹 Si es Vampiro: mostrar posibles enemigos para drenar
+        if (pieza instanceof Datos.PiezaVampiro) {
+            mostrarOpcionesDrenaje(pieza);
+            return;
+        }
+        JOptionPane.showMessageDialog(this, "No hay enemigos en rango para usar la habilidad.");
+    }
+    
+    private void invocarZombie(Pieza muerte) {
+        java.util.List<Point> opciones = new java.util.ArrayList<>();
+
+        for (int r = selectedRow - 1; r <= selectedRow + 1; r++) {
+            for (int c = selectedCol - 1; c <= selectedCol + 1; c++) {
+                if (r >= 0 && r < SIZE && c >= 0 && c < SIZE && tableroLogico[r][c] == null) {
+                    opciones.add(new Point(r, c));
+                }
+            }
+        }
+
+        if (opciones.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay espacio libre para invocar un Zombie.");
+            return;
+        }
+
+        // 🔹 Limpiar antes de resaltar (por si se usa de nuevo en el mismo turno)
+        limpiarResaltados();
+
+        // 🔹 Resalta las casillas disponibles
+        for (Point p : opciones) {
+            casillas[p.x][p.y].setBackground(new Color(100, 220, 100, 180));
+        }
+
+        JOptionPane.showMessageDialog(this,
+            "Selecciona una casilla verde para invocar el Zombie.",
+            "Invocar Zombie", JOptionPane.INFORMATION_MESSAGE);
+
+        // 🔹 Activar modo invocación
+        modoInvocacion = true;
+        casillasInvocacion = opciones;
+    }
+
+
+    private void colocarZombie(Pieza muerte, int fila, int col) {
+        limpiarResaltados();
+
+        tableroLogico[fila][col] = new Datos.PiezaZombie(muerte.color);
+        actualizarTableroGUI();
+
+        JOptionPane.showMessageDialog(this,
+            "☠️ La Muerte ha invocado un Zombie en (" + fila + ", " + col + ")");
+        
+        registrarMensaje("☠️ La Muerte ha invocado un Zombie en (" + fila + ", " + col + ")");
+
+        deseleccionarPieza();
+        modoInvocacion = false;
+        casillasInvocacion = null;
+        cambiarTurno();
+    }
+
     
     private int contarPiezas(Color colorJugador) {
         int contador = 0;
@@ -493,6 +744,41 @@ public class Partida extends JFrame {
         return contador;
     }
     
+    private void mostrarOpcionesDrenaje(Pieza vampiro) {
+        java.util.List<Point> opciones = new java.util.ArrayList<>();
+
+        // Buscar enemigos adyacentes
+        for (int r = selectedRow - 1; r <= selectedRow + 1; r++) {
+            for (int c = selectedCol - 1; c <= selectedCol + 1; c++) {
+                if (r >= 0 && r < SIZE && c >= 0 && c < SIZE) {
+                    Pieza enemigo = tableroLogico[r][c];
+                    if (enemigo != null && !enemigo.color.equals(vampiro.color)) {
+                        opciones.add(new Point(r, c));
+                    }
+                }
+            }
+        }
+
+        if (opciones.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No hay enemigos cerca para drenar.");
+            return;
+        }
+
+        // 🔮 Resaltar enemigos con color morado
+        limpiarResaltados();
+        for (Point p : opciones) {
+            casillas[p.x][p.y].setBackground(new Color(180, 0, 180, 150));
+        }
+
+        JOptionPane.showMessageDialog(this,
+            "Selecciona una casilla morada para drenar vida.",
+            "Drenar Sangre", JOptionPane.INFORMATION_MESSAGE);
+
+        modoDrenaje = true;
+        casillasDrenaje = opciones;
+    }
+
+    
     private int calcularGirosDisponibles(Color colorJugador) {
         int piezasIniciales = 6;
         int piezasActuales = contarPiezas(colorJugador);
@@ -506,30 +792,30 @@ public class Partida extends JFrame {
     // --- En Partida.java: Métodos ---
 
     private void iniciarPrimerTurnoConSorteo() {
-        System.out.println("\n--- Es el turno del jugador ROJO ---");
+        registrarMensaje("\n--- Es el turno del jugador BLANCO ---");
     
         // El método girar() BLOQUEA la ejecución hasta que el JDialog se cierra
         piezaPermitida = ruleta.girar(); 
     
-        System.out.println("Pieza obligatoria para mover: " + piezaPermitida + "\n");
+        registrarMensaje("Pieza obligatoria para mover: " + piezaPermitida + "\n");
     }
 
     private void cambiarTurno() {
         // Cambiar turno
         turnoActual = turnoActual.equals(Color.RED) ? Color.BLUE : Color.RED;
-        System.out.println("\n--- Es el turno del jugador " + (turnoActual.equals(Color.RED) ? "ROJO" : "AZUL") + " ---");
+        registrarMensaje("\n--- Es el turno del jugador " + (turnoActual.equals(Color.RED) ? "NEGRO" : "BLANCO") + " ---");
 
         // Calcular giros disponibles
         int girosDisponibles = calcularGirosDisponibles(turnoActual);
 
         // Mostrar al jugador
-        System.out.println("El jugador tiene " + girosDisponibles + " oportunidad(es) de giro de ruleta.");
+        registrarMensaje("El jugador tiene " + girosDisponibles + " oportunidad(es) de giro de ruleta.");
 
         // Intentar girar ruleta según las oportunidades disponibles
         boolean piezaValidaEncontrada = false;
 
         for (int intento = 1; intento <= girosDisponibles; intento++) {
-            System.out.println("Intento #" + intento);
+            registrarMensaje("Intento #" + intento);
             String piezaSorteada = ruleta.girar();
 
             if (tienePiezaDisponible(turnoActual, piezaSorteada)) {
@@ -537,7 +823,7 @@ public class Partida extends JFrame {
                 piezaValidaEncontrada = true;
                 break;
             } else {
-                System.out.println("⚠️ El jugador no tiene piezas del tipo " + piezaSorteada + ". Se vuelve a girar...");
+                registrarMensaje("⚠️ El jugador no tiene piezas del tipo " + piezaSorteada + ". Se vuelve a girar...");
             }
         }
 
@@ -545,13 +831,13 @@ public class Partida extends JFrame {
             // Si después de todos los giros no hay pieza válida, pierde el turno
             piezaPermitida = null;
             JOptionPane.showMessageDialog(this,
-                    "El jugador " + (turnoActual.equals(Color.RED) ? "ROJO" : "AZUL")
+                    "El jugador " + (turnoActual.equals(Color.RED) ? "NEGRO" : "BLANCO")
                     + " no tiene piezas sorteadas disponibles. Pierde el turno.",
                     "Turno perdido", JOptionPane.INFORMATION_MESSAGE);
 
             cambiarTurno(); // Pasa directamente al otro jugador
         } else {
-            System.out.println("Pieza obligatoria para mover: " + piezaPermitida);
+            registrarMensaje("Pieza obligatoria para mover: " + piezaPermitida);
         }
     }
     
@@ -567,6 +853,25 @@ public class Partida extends JFrame {
         return false;
     }
     
+    private void registrarPiezaPerdida(Pieza piezaPerdida) {
+        JLabel icono = new JLabel();
+        icono.setHorizontalAlignment(SwingConstants.CENTER);
+        icono.setIcon(getIconoPieza(piezaPerdida));
+
+        if (piezaPerdida.color.equals(Color.RED)) {
+            panelPiezasRojasPerdidas.add(icono);
+        } else if (piezaPerdida.color.equals(Color.BLUE)) {
+            panelPiezasAzulesPerdidas.add(icono);
+        }
+
+        // Refrescar interfaz
+        panelPiezasRojasPerdidas.revalidate();
+        panelPiezasRojasPerdidas.repaint();
+        panelPiezasAzulesPerdidas.revalidate();
+        panelPiezasAzulesPerdidas.repaint();
+    }
+
+    
     private void verificarFinDeJuego() {
         int piezasRojas = contarPiezas(Color.RED);
         int piezasAzules = contarPiezas(Color.BLUE);
@@ -577,9 +882,9 @@ public class Partida extends JFrame {
             if (piezasRojas == 0 && piezasAzules == 0) {
                 ganador = "Empate — ambos jugadores perdieron todas sus piezas.";
             } else if (piezasRojas == 0) {
-                ganador = "¡El jugador AZUL ha ganado!";
+                ganador = "¡El jugador BLANCO ha ganado!";
             } else {
-                ganador = "¡El jugador ROJO ha ganado!";
+                ganador = "¡El jugador NEGRO ha ganado!";
             }
 
             // Mostrar mensaje final
@@ -602,14 +907,22 @@ public class Partida extends JFrame {
     }
     
     private void reiniciarPartida() {
-        System.out.println("\n🔁 Reiniciando partida...");
+        registrarMensaje("\n🔁 Reiniciando partida...");
+        
+        panelPiezasRojasPerdidas.removeAll();
+        panelPiezasAzulesPerdidas.removeAll();
+        panelPiezasRojasPerdidas.revalidate();
+        panelPiezasRojasPerdidas.repaint();
+        panelPiezasAzulesPerdidas.revalidate();
+        panelPiezasAzulesPerdidas.repaint();
+
 
         // Reinicia la lógica del tablero
         tableroLogico = new Pieza[SIZE][SIZE];
         colocarPiezasIniciales();
 
         // Reinicia variables de control
-        turnoActual = Color.RED;
+        turnoActual = Color.BLUE;
         piezaPermitida = null;
 
         // Recalcular giros
@@ -623,5 +936,37 @@ public class Partida extends JFrame {
         iniciarPrimerTurnoConSorteo();
     }
 
+    private void rendirse() {
+        String jugador = (turnoActual.equals(Color.RED)) ? "ROJO" : "AZUL";
+        String ganador = (turnoActual.equals(Color.RED)) ? "AZUL" : "ROJO";
+
+        int opcion = JOptionPane.showConfirmDialog(
+                this,
+                "¿Seguro que deseas rendirte?\nEl jugador " + ganador + " será declarado ganador.",
+                "Confirmar Rendición",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+        );
+
+        if (opcion == JOptionPane.YES_OPTION) {
+            JOptionPane.showMessageDialog(this,
+                    "🏳️ El jugador " + jugador + " se ha rendido.\n🎉 ¡El jugador " + ganador + " gana la partida!",
+                    "Fin del juego",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            int nuevaPartida = JOptionPane.showConfirmDialog(
+                    this,
+                    "¿Deseas iniciar una nueva partida?",
+                    "Reiniciar",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (nuevaPartida == JOptionPane.YES_OPTION) {
+                reiniciarPartida();
+            } else {
+                System.exit(0);
+            }
+        }
+    }
 
 }

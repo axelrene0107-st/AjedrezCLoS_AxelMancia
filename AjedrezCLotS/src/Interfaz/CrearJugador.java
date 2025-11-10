@@ -28,8 +28,8 @@ public class CrearJugador extends JFrame implements ActionListener {
     public JTextField nombreCuenta;
     public JPasswordField contrasena;
     
-    public CrearJugador(){
-        listaJugadores= new Jugadores();
+    public CrearJugador(Jugadores listaCompartida){
+        this.listaJugadores = listaCompartida;
         this.setSize(500, 500);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("Creación de Jugador");
@@ -49,7 +49,7 @@ public class CrearJugador extends JFrame implements ActionListener {
     private void colocarPanels(){//Metodo para añadir paneles
         panelCJ= new JPanel();//Creo el panel para la ventana de menu
         panelCJ.setLayout(null);//Desactivamos el diseño por defecto
-        panelCJ.setBackground(Color.white);//Le asignamos un color
+        panelCJ.setBackground(Color.BLACK);//Le asignamos un color
         this.getContentPane().add(panelCJ);//se agrega el panel a la ventana 
         
     } 
@@ -97,24 +97,8 @@ public class CrearJugador extends JFrame implements ActionListener {
         btnCrear.setBounds(300, 400, 150, 40);//Le asignamos sus posisicion y dimension
         btnCrear.setIcon(new ImageIcon(iconCrear.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
         panelCJ.add(btnCrear);
-        ActionListener accion= new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if(contrasena.getPassword().length!=5){
-                    JOptionPane.showMessageDialog(null, "La contraseña debe ser de 5 caracteres.", "Error con Contraseña", JOptionPane.WARNING_MESSAGE);
-                    }else if(nombreCuenta.getText().length()<7 || nombreCuenta.getText().length()>10){
-                        JOptionPane.showMessageDialog(null, "El nombre debe tener entre 7-10 letras", "Error con Nombre", JOptionPane.WARNING_MESSAGE);
-                        }else if(listaJugadores.revisarNombres(nombreCuenta.getText())==true){//Revisa si el nombre escrito ya existe
-                            JOptionPane.showMessageDialog(null, "Ese nombre ya esta en uso.", "Error con Nombre", JOptionPane.WARNING_MESSAGE);
-                            }else{
-                            Jugador player= new Jugador(nombreCuenta.getText(), contrasena.getPassword());
-                            listaJugadores.guardarJugadores(player);
-                            JOptionPane.showMessageDialog(null, "La cuenta se ha creado con exito.", "Cuenta Creada", JOptionPane.INFORMATION_MESSAGE);
-                            CrearJugador.this.setVisible(false);
-                            }               
-            }                
-        };
-        btnCrear.addActionListener(accion);
+        
+        btnCrear.addActionListener(e -> crearJugador());
         
         //Creacion del boton salir
         ImageIcon iconSalir= new ImageIcon("btnSalir.png");
@@ -122,13 +106,7 @@ public class CrearJugador extends JFrame implements ActionListener {
         btnSalir.setBounds(140, 400, 150, 40);//Le asignamos sus posicion y dimensiones
         btnSalir.setIcon(new ImageIcon(iconSalir.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
         panelCJ.add(btnSalir);
-        ActionListener accion2= new ActionListener(){
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                CrearJugador.this.setVisible(false);
-            }
-        };       
-        btnSalir.addActionListener(accion2);
+        btnSalir.addActionListener(e -> setVisible(false));
         
      }
 
@@ -151,6 +129,33 @@ public class CrearJugador extends JFrame implements ActionListener {
         contrasena.setForeground(Color.YELLOW);
         contrasena.setBackground(Color.DARK_GRAY);
         panelCJ.add(contrasena);
+    }
+    
+     private void crearJugador() {
+        String nombre = nombreCuenta.getText().trim();
+        char[] pass = contrasena.getPassword();
+
+        if (pass.length != 5) {
+            JOptionPane.showMessageDialog(this, "La contraseña debe ser de 5 caracteres.", "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (nombre.length() < 7 || nombre.length() > 10) {
+            JOptionPane.showMessageDialog(this, "El nombre debe tener entre 7 y 10 letras.", "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (listaJugadores.revisarNombres(nombre)) {
+            JOptionPane.showMessageDialog(this, "Ese nombre ya está en uso.", "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // ✅ Crear y guardar el jugador
+        Jugador nuevo = new Jugador(nombre, pass);
+        listaJugadores.guardarJugadores(nuevo);
+
+        JOptionPane.showMessageDialog(this, "La cuenta se ha creado con éxito.", "Cuenta Creada", JOptionPane.INFORMATION_MESSAGE);
+        this.setVisible(false);
     }
 
     @Override

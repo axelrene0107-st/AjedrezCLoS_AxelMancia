@@ -66,4 +66,11 @@ public abstract class Pieza {
      */
     public abstract boolean esMovimientoValido(int r1, int c1, int r2, int c2);
     
+    public boolean puedeUsarHabilidadEspecial() {
+        return false; // Por defecto no tiene habilidad especial
+    }
+
+    public void usarHabilidadEspecial(Pieza objetivo) {
+        // Implementado en las subclases que lo necesiten
+    }
 }

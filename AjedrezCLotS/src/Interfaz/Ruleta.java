@@ -20,7 +20,7 @@ public class Ruleta extends JDialog implements ActionListener {
     public Ruleta(JFrame parent) {
         super(parent, "Resultado del Sorteo", true); // Diálogo modal: bloquea la Partida
 
-        setSize(300, 300);
+        setSize(250, 300);
         setUndecorated(true); // Elimina la barra de título para un look más limpio
         setLayout(new BorderLayout());
         setResizable(false);

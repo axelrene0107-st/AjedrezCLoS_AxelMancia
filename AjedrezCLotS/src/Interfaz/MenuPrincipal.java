@@ -39,7 +39,7 @@ public final class MenuPrincipal extends JFrame{
     private void colocarPanels(){//Metodo para añadir paneles
         panel= new JPanel();//Creo el panel para la ventana de menu
         panel.setLayout(null);//Desactivamos el diseño por defecto
-        panel.setBackground(Color.white);//Le asignamos un color
+        panel.setBackground(Color.BLACK);//Le asignamos un color
         this.getContentPane().add(panel);//se agrega el panel a la ventana de menu
         
     }    

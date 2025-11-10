@@ -17,8 +17,17 @@ public class PiezaMuerte extends Pieza {
     public boolean esMovimientoValido(int r1, int c1, int r2, int c2) {
         int dr = Math.abs(r1 - r2);
         int dc = Math.abs(c1 - c2);
-        
-        // Movimiento de 1 casilla en cualquier dirección.
-        return dr <= 1 && dc <= 1 && (dr + dc > 0);
+
+        // 🔹 Permite moverse en línea recta o diagonal a cualquier distancia
+        boolean enLineaRecta = (r1 == r2) || (c1 == c2);
+        boolean enDiagonal = (dr == dc);
+
+        return (enLineaRecta || enDiagonal) && (dr + dc > 0);
+    }
+    
+    
+    @Override
+    public boolean puedeUsarHabilidadEspecial() {
+        return true;
     }
 }
