@@ -4,6 +4,7 @@ package Interfaz;
 import Datos.Jugador;
 import Datos.Jugadores;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
@@ -98,6 +99,10 @@ JPasswordField contrasena;
         JButton btnLogIn= new JButton(iconLogIn);//Creamos boton para iniciar sesion
         btnLogIn.setBounds(300, 400, 150, 40);//Le asignamos sus posisicion y dimension
         btnLogIn.setIcon(new ImageIcon(iconLogIn.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnLogIn.setBorder(null);
+        btnLogIn.setContentAreaFilled(false);
+        btnLogIn.setFocusPainted(false);
+        btnLogIn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         panelLI.add(btnLogIn);      
         //Accion del boton de log in
         btnLogIn.addActionListener(e -> iniciarSesion());
@@ -107,6 +112,10 @@ JPasswordField contrasena;
         JButton btnSalir= new JButton();//Creamos boton para iniciar sesion
         btnSalir.setBounds(140, 400, 150, 40);//Le asignamos sus posicion y dimensiones
         btnSalir.setIcon(new ImageIcon(iconSalir.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnSalir.setBorder(null);
+        btnSalir.setContentAreaFilled(false);
+        btnSalir.setFocusPainted(false);
+        btnSalir.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         panelLI.add(btnSalir);
         //Accion del boton salir
         btnSalir.addActionListener(e -> setVisible(false));
@@ -158,7 +167,7 @@ JPasswordField contrasena;
         this.setVisible(false);
 
         // Abre el menú principal
-        MenuPrincipal menu = new MenuPrincipal();
+        MenuPrincipal menu = new MenuPrincipal(jugadorEncontrado, listaJ);
         menu.setVisible(true);
     }
 

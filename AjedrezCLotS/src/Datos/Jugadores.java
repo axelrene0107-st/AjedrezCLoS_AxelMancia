@@ -5,8 +5,7 @@ import java.util.Arrays;
 
 public class Jugadores {
 
-    private ArrayList<Jugador> jugadores;
-
+    public ArrayList<Jugador> jugadores;
     public Jugadores() {
         jugadores = new ArrayList<>();
     }
@@ -33,7 +32,6 @@ public class Jugadores {
         return false;
     }
 
-    // ⚠️ Comparar contraseñas correctamente
     public boolean revisarPassword(char[] contrasena) {
         for (Jugador player : jugadores) {
             if (Arrays.equals(player.getPassword(), contrasena)) {
@@ -45,7 +43,6 @@ public class Jugadores {
         return false;
     }
 
-    // ✅ Busca jugador por nombre y contraseña
     public Jugador buscarJugador(String nombre, char[] contrasena) {
         for (Jugador player : jugadores) {
             if (player.getNombre().equalsIgnoreCase(nombre) &&
@@ -53,10 +50,9 @@ public class Jugadores {
                 return player;
             }
         }
-        return null; // No encontrado
+        return null; 
     }
 
-    // ✅ Devuelve toda la lista (si necesitas usarla en otra clase)
     public ArrayList<Jugador> getLista() {
         return jugadores;
     }

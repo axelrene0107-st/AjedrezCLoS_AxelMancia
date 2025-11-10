@@ -21,6 +21,7 @@ public class Partida extends JFrame {
     private JPanel panelPiezasRojasPerdidas;
     private JPanel panelPiezasAzulesPerdidas;
     private JTextArea areaMensajes;
+    
 
 
 
@@ -30,6 +31,11 @@ public class Partida extends JFrame {
     private int selectedCol = -1;
     private Color turnoActual = Color.BLUE; 
     JButton btnRendirse;
+    private JLabel barraJugadorBlanco;
+    private JLabel barraJugadorNegro;
+    private String nombreJugadorBlanco = "Jugador Blanco";
+    private String nombreJugadorNegro = "Computadora"; // o el nombre del oponente real
+
     
     private Ruleta ruleta; // Vuelve al JDialog
     private String piezaPermitida = null;
@@ -59,12 +65,14 @@ public class Partida extends JFrame {
     private static final Color COLOR_ATAQUE_LARGO = new Color(160, 50, 200, 120); // Morado semitransparente
     private static final Color COLOR_SELECCIONADO = Color.YELLOW;
 
-    public Partida() {
+    public Partida(String nombreJugadorBlanco, String nombreJugadorNegro) {
+        this.nombreJugadorBlanco = nombreJugadorBlanco;
+        this.nombreJugadorNegro = nombreJugadorNegro;
         setTitle("Vampire Wargame Chess");
-        setSize(950, 800);
+        setSize(950, 680);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setMinimumSize(new Dimension(950, 800));
+        setMinimumSize(new Dimension(950, 680));
         setLayout(null);
 
         tableroLogico = new Pieza[SIZE][SIZE];
@@ -195,14 +203,15 @@ public class Partida extends JFrame {
         colocarBotonHabilidad();
         colocarPanelesPiezasPerdidas();
         colocarAreaMensajes();
-        colocarTablero();
-        colocarLabels();          
+        colocarFondo();  
+        colocarTablero();  
+
         
     }
 
     private void colocarPanel() {
         panel = new JPanel();
-        panel.setBounds(0, 0, 950, 800);
+        panel.setBounds(0, 0, 950, 680);
         panel.setLayout(null);
         add(panel);
     }
@@ -212,14 +221,14 @@ public class Partida extends JFrame {
         panelPiezasAzulesPerdidas = new JPanel();
         panelPiezasAzulesPerdidas.setLayout(new GridLayout(6, 1, 5, 5));
         panelPiezasAzulesPerdidas.setBackground(new Color(30, 30, 60));
-        panelPiezasAzulesPerdidas.setBounds(30, 130, 100, 500);
+        panelPiezasAzulesPerdidas.setBounds(30, 130, 100, 450);
         panel.add(panelPiezasAzulesPerdidas);
 
         // Panel derecho (jugador rojo / negras)
         panelPiezasRojasPerdidas = new JPanel();
         panelPiezasRojasPerdidas.setLayout(new GridLayout(6, 1, 5, 5));
         panelPiezasRojasPerdidas.setBackground(new Color(60, 20, 20));
-        panelPiezasRojasPerdidas.setBounds(820, 130, 100, 500);
+        panelPiezasRojasPerdidas.setBounds(820, 130, 100, 450);
         panel.add(panelPiezasRojasPerdidas);
     }
 
@@ -266,12 +275,7 @@ public class Partida extends JFrame {
         panel.setComponentZOrder(tablero, 0); 
     }
 
-    private void colocarLabels() {
-        ImageIcon iconLogo = new ImageIcon("Logo.png");
-        JLabel logo = new JLabel(new ImageIcon(iconLogo.getImage().getScaledInstance(200, 130, Image.SCALE_SMOOTH)));
-        logo.setBounds(440, 750, 200, 130);
-        panel.add(logo);
-        
+    private void colocarFondo() {   
         ImageIcon iconFondo = new ImageIcon("Fondo4.jpg"); 
         JLabel fondo = new JLabel(new ImageIcon(iconFondo.getImage().getScaledInstance(950, 800, Image.SCALE_SMOOTH)));
         fondo.setBounds(0, 0, 950, 800);
@@ -282,8 +286,12 @@ public class Partida extends JFrame {
     private void colocarBotonHabilidad() {
         ImageIcon iconBtnEspecial= new ImageIcon("BtnEspecial.png");
         btnHabilidadEspecial= new JButton(iconBtnEspecial);//Creamos boton para iniciar sesion
-        btnHabilidadEspecial.setBounds(270, 20, 200, 70);//Le asignamos sus posisicion y dimension
+        btnHabilidadEspecial.setBounds(270, 18, 200, 80);//Le asignamos sus posisicion y dimension
         btnHabilidadEspecial.setIcon(new ImageIcon(iconBtnEspecial.getImage().getScaledInstance(270, 190, Image.SCALE_SMOOTH)));
+        btnHabilidadEspecial.setBorder(null);
+        btnHabilidadEspecial.setContentAreaFilled(false);
+        btnHabilidadEspecial.setFocusPainted(false);
+        btnHabilidadEspecial.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnHabilidadEspecial.addActionListener(e -> activarHabilidadEspecial());
         btnHabilidadEspecial.setEnabled(false);
         panel.add(btnHabilidadEspecial);
@@ -292,8 +300,12 @@ public class Partida extends JFrame {
     private void colocarBotonRendicion() {       
         ImageIcon iconBtnRendirse= new ImageIcon("BtnRendirse.png");
         btnRendirse= new JButton(iconBtnRendirse);//Creamos boton para iniciar sesion
-        btnRendirse.setBounds(480, 20, 200, 70);//Le asignamos sus posisicion y dimension
+        btnRendirse.setBounds(480, 20, 200, 80);//Le asignamos sus posisicion y dimension
         btnRendirse.setIcon(new ImageIcon(iconBtnRendirse.getImage().getScaledInstance(270, 220, Image.SCALE_SMOOTH)));
+        btnRendirse.setBorder(null);
+        btnRendirse.setContentAreaFilled(false);
+        btnRendirse.setFocusPainted(false);
+        btnRendirse.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnRendirse.addActionListener(e -> rendirse());
         panel.add(btnRendirse);
     }
@@ -308,7 +320,7 @@ public class Partida extends JFrame {
         areaMensajes.setWrapStyleWord(true);
 
         JScrollPane scroll = new JScrollPane(areaMensajes);
-        scroll.setBounds(0, 0, 230, 100);
+        scroll.setBounds(0, 0, 230, 120);
         scroll.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(Color.DARK_GRAY, 1),
             "MENSAJES",
@@ -320,6 +332,8 @@ public class Partida extends JFrame {
 
         panel.add(scroll);
     }
+    
+
     
     private void registrarMensaje(String mensaje) {
         areaMensajes.append(mensaje + "\n");
@@ -497,13 +511,12 @@ public class Partida extends JFrame {
         // Aplica el daño
         defensor.recibirDaño(daño);
 
-        registrarMensaje(atacante.getTipo() + " (" + (atacante.color.equals(Color.RED) ? "NEGRO" : "BLANCO") + 
-                            ") ataca a " + defensor.getTipo() + " (Daño: " + daño + ")");
+        registrarMensaje(atacante.getTipo() + " (" + (atacante.color.equals(Color.RED) ? "NEGRO" : "BLANCO") + ") ataca a " + defensor.getTipo() + " (Daño: " + daño + ")");
         registrarMensaje("Defensor vida/solidez restante: " + defensor.getVida() + "/" + defensor.getSolidez());
 
         // Si el defensor muere, el atacante ocupa su lugar
         if (!defensor.estaViva()) {
-            System.out.println("💀 ¡" + defensor.getTipo() + " ha sido derrotado!");
+            System.out.println(defensor.getTipo() + " ha sido derrotado!");
             tableroLogico[targetRow][targetCol] = atacante;
             tableroLogico[selectedRow][selectedCol] = null;
         } else {
@@ -521,7 +534,7 @@ public class Partida extends JFrame {
         registrarMensaje(atacante.getTipo() + " realiza ataque (" + daño + " daño) sobre " + defensor.getTipo());
 
         if (!defensor.estaViva()) {
-            registrarMensaje("💀 " + defensor.getTipo() + " ha sido derrotado.");
+            registrarMensaje(defensor.getTipo() + " ha sido derrotado.");
             tableroLogico[targetRow][targetCol] = atacante;
             tableroLogico[selectedRow][selectedCol] = null;
             registrarPiezaPerdida(defensor);
@@ -891,12 +904,7 @@ public class Partida extends JFrame {
             JOptionPane.showMessageDialog(this, ganador, "Fin del Juego", JOptionPane.INFORMATION_MESSAGE);
 
             // Preguntar si se desea reiniciar o salir
-            int opcion = JOptionPane.showConfirmDialog(
-                    this,
-                    "¿Deseas jugar otra partida?",
-                    "Juego terminado",
-                    JOptionPane.YES_NO_OPTION
-            );
+            int opcion = JOptionPane.showConfirmDialog(this, "¿Deseas jugar otra partida?", "Juego terminado", JOptionPane.YES_NO_OPTION);
 
             if (opcion == JOptionPane.YES_OPTION) {
                 reiniciarPartida();
@@ -937,34 +945,20 @@ public class Partida extends JFrame {
     }
 
     private void rendirse() {
-        String jugador = (turnoActual.equals(Color.RED)) ? "ROJO" : "AZUL";
-        String ganador = (turnoActual.equals(Color.RED)) ? "AZUL" : "ROJO";
+        String jugador = (turnoActual.equals(Color.RED)) ? "NEGRO" : "BLANCO";
+        String ganador = (turnoActual.equals(Color.RED)) ? "BLANCO" : "NEGRO";
 
-        int opcion = JOptionPane.showConfirmDialog(
-                this,
-                "¿Seguro que deseas rendirte?\nEl jugador " + ganador + " será declarado ganador.",
-                "Confirmar Rendición",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-        );
+        int opcion = JOptionPane.showConfirmDialog(this, "¿Seguro que deseas rendirte?\nEl jugador " + ganador + " será declarado ganador.", "Confirmar Rendición", JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
 
         if (opcion == JOptionPane.YES_OPTION) {
-            JOptionPane.showMessageDialog(this,
-                    "🏳️ El jugador " + jugador + " se ha rendido.\n🎉 ¡El jugador " + ganador + " gana la partida!",
-                    "Fin del juego",
-                    JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "El jugador " + jugador + " se ha rendido.\n¡El jugador " + ganador + " gana la partida!","Fin del juego", JOptionPane.INFORMATION_MESSAGE);
 
-            int nuevaPartida = JOptionPane.showConfirmDialog(
-                    this,
-                    "¿Deseas iniciar una nueva partida?",
-                    "Reiniciar",
-                    JOptionPane.YES_NO_OPTION
-            );
+            int nuevaPartida = JOptionPane.showConfirmDialog(this, "¿Deseas iniciar una nueva partida?", "Reiniciar", JOptionPane.YES_NO_OPTION);
 
             if (nuevaPartida == JOptionPane.YES_OPTION) {
                 reiniciarPartida();
             } else {
-                System.exit(0);
+                this.setVisible(false);
             }
         }
     }

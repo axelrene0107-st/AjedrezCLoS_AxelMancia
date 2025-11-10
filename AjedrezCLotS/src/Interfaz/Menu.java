@@ -2,6 +2,7 @@
 package Interfaz;
 import Datos.Jugadores;
 import java.awt.Color;
+import java.awt.Cursor;
 import javax.swing.JFrame;
 import java.awt.Dimension;
 import java.awt.Image;
@@ -69,6 +70,10 @@ public class Menu extends JFrame{
         JButton btnLogIn= new JButton(iconLogIn);//Creamos boton para iniciar sesion
         btnLogIn.setBounds(170, 250, 150, 40);//Le asignamos sus dimensiones y posicion
         btnLogIn.setIcon(new ImageIcon(iconLogIn.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnLogIn.setBorder(null);
+        btnLogIn.setContentAreaFilled(false);
+        btnLogIn.setFocusPainted(false);
+        btnLogIn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         //Accion del boton de log in
         btnLogIn.addActionListener(e -> {
             if (ventanaCJ != null && ventanaCJ.getListaJugadores() != null) {
@@ -88,6 +93,10 @@ public class Menu extends JFrame{
         JButton btnCrearJugador= new JButton();//Creamos boton para iniciar sesion
         btnCrearJugador.setBounds(170, 300, 150, 40);//Le asignamos sus dimensiones y posicion
         btnCrearJugador.setIcon(new ImageIcon(iconCrearJugador.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnCrearJugador.setBorder(null);
+        btnCrearJugador.setContentAreaFilled(false);
+        btnCrearJugador.setFocusPainted(false);
+        btnCrearJugador.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnCrearJugador.addActionListener(e -> {
             if (ventanaCJ == null) {
                 ventanaCJ = new CrearJugador(listaGlobal);
@@ -101,6 +110,10 @@ public class Menu extends JFrame{
         JButton btnSalir= new JButton();//Creamos boton para iniciar sesion
         btnSalir.setBounds(170, 350, 150, 40);//Le asignamos sus dimensiones y posicion
         btnSalir.setIcon(new ImageIcon(iconSalir.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnSalir.setBorder(null);
+        btnSalir.setContentAreaFilled(false);
+        btnSalir.setFocusPainted(false);
+        btnSalir.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnSalir.addActionListener(e -> System.exit(0));
         panel.add(btnSalir);
     }

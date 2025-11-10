@@ -8,24 +8,24 @@ import java.util.Random;
 
 public class Ruleta extends JDialog implements ActionListener {
 
-    // Tipos de pieza: asegúrate de que coincidan con tus archivos GIF
     private static final String[] TIPOS_PIEZA = {"Lobo", "Vampiro", "Muerte"};
     private String piezaSorteada = null;
     private JLabel labelGif;
     private Timer timer;
 
-    // Tiempo total de visualización del resultado (antes de cerrar el diálogo)
-    private static final int TIEMPO_RESULTADO_MS = 3400; // 1.5 segundos
+    private static final int TIEMPO_RESULTADO_MS = 3000; // El tiempo que dura el gif 
 
     public Ruleta(JFrame parent) {
-        super(parent, "Resultado del Sorteo", true); // Diálogo modal: bloquea la Partida
+        super(parent, "Resultado del Sorteo", true);
 
         setSize(250, 300);
-        setUndecorated(true); // Elimina la barra de título para un look más limpio
+        setUndecorated(true);
         setLayout(new BorderLayout());
-        setResizable(false);
+        setResizable(true);
         setLocationRelativeTo(parent);
-
+        
+        
+        //Panel de la ruleta
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(new Color(30, 0, 0, 180)); 
         this.add(contentPanel, BorderLayout.CENTER);

@@ -4,6 +4,7 @@ package Interfaz;
 import Datos.Jugador;
 import Datos.Jugadores;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
@@ -96,6 +97,10 @@ public class CrearJugador extends JFrame implements ActionListener {
         JButton btnCrear= new JButton(iconCrear);//Creamos boton para iniciar sesion
         btnCrear.setBounds(300, 400, 150, 40);//Le asignamos sus posisicion y dimension
         btnCrear.setIcon(new ImageIcon(iconCrear.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnCrear.setBorder(null);
+        btnCrear.setContentAreaFilled(false);
+        btnCrear.setFocusPainted(false);
+        btnCrear.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         panelCJ.add(btnCrear);
         
         btnCrear.addActionListener(e -> crearJugador());
@@ -105,6 +110,10 @@ public class CrearJugador extends JFrame implements ActionListener {
         JButton btnSalir= new JButton();//Creamos boton para iniciar sesion
         btnSalir.setBounds(140, 400, 150, 40);//Le asignamos sus posicion y dimensiones
         btnSalir.setIcon(new ImageIcon(iconSalir.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
+        btnSalir.setBorder(null);
+        btnSalir.setContentAreaFilled(false);
+        btnSalir.setFocusPainted(false);
+        btnSalir.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         panelCJ.add(btnSalir);
         btnSalir.addActionListener(e -> setVisible(false));
         
