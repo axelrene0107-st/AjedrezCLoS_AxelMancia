@@ -14,15 +14,15 @@ public class PiezaMuerte extends Pieza {
     }
 
     @Override
-    public boolean esMovimientoValido(int r1, int c1, int r2, int c2) {
-        int dr = Math.abs(r1 - r2);
-        int dc = Math.abs(c1 - c2);
+    public boolean esMovimientoValido(int fila1, int columna1, int fila2, int columna2) {
+        int direccionFila = Math.abs(fila1 - fila2);
+        int direccionColumna = Math.abs(columna1 - columna2);
 
         // 🔹 Permite moverse en línea recta o diagonal a cualquier distancia
-        boolean enLineaRecta = (r1 == r2) || (c1 == c2);
-        boolean enDiagonal = (dr == dc);
+        boolean enLineaRecta = (fila1 == fila2) || (columna1 == columna2);
+        boolean enDiagonal = (direccionFila == direccionColumna);
 
-        return (enLineaRecta || enDiagonal) && (dr + dc > 0);
+        return (enLineaRecta || enDiagonal) && (direccionFila + direccionColumna > 0);
     }
     
     

@@ -32,34 +32,33 @@ public class Ruleta extends JDialog implements ActionListener {
 
         labelGif = new JLabel();
         labelGif.setHorizontalAlignment(SwingConstants.CENTER);
-        labelGif.setOpaque(false); // 🔹 Esto lo hace transparente
+        labelGif.setOpaque(false); 
         contentPanel.add(labelGif, BorderLayout.CENTER);
 
-        // El Timer controla cuánto tiempo se muestra el resultado
         timer = new Timer(TIEMPO_RESULTADO_MS, this);
         timer.setRepeats(false);
     }
 
     public String girar() {
-        // 1. Lógica de sorteo inmediato
+        // Sorteo inmediato
         Random random = new Random();
         int index = random.nextInt(TIPOS_PIEZA.length);
         piezaSorteada = TIPOS_PIEZA[index];
 
-        // 2. Muestra el GIF/imagen de la pieza ganadora
+        // Mostrar el gif 
         String resultadoImg = piezaSorteada+"_Resultado.gif";
         cargarImagen(resultadoImg);
 
-        // 3. Inicia el Timer y muestra el diálogo modal
+        // Inicia el timer
         timer.start();
 
-        // IMPORTANTE: setVisible(true) bloquea la ejecución hasta que dispose() es llamado
+        
         setVisible(true);
 
         return piezaSorteada;
     }
 
-    // 🔹 Carga el GIF igual que las imágenes del proyecto (desde la raíz del src/)
+    // Metodo para cargar el gif
     private void cargarImagen(String fileName) {
         labelGif.setIcon(null);
         labelGif.setText(null);
@@ -67,13 +66,13 @@ public class Ruleta extends JDialog implements ActionListener {
         try {
             ImageIcon icon = null;
 
-            // 1️⃣ Intenta cargar desde el classpath (build/classes)
+            // Busca el metodo desde la raiz
             java.net.URL url = getClass().getResource("/" + fileName);
             if (url != null) {
                 icon = new ImageIcon(url);
             }
-
-            // 2️⃣ Si no se encontró, intenta desde la carpeta src (NetBeans)
+            
+            //Tuve problemas cargando el gif entonces pase los gifs a la carpeta source, con este metodo los busca ahi
             if (icon == null || icon.getIconWidth() == -1) {
                 java.io.File file = new java.io.File("src/" + fileName);
                 if (file.exists()) {
@@ -81,7 +80,6 @@ public class Ruleta extends JDialog implements ActionListener {
                 }
             }
 
-            // 3️⃣ Verifica la carga
             if (icon == null || icon.getIconWidth() == -1) {
                 throw new Exception("No se pudo cargar el GIF: " + fileName);
             }
@@ -96,10 +94,9 @@ public class Ruleta extends JDialog implements ActionListener {
         }
     }
 
-       // 🔹 Se ejecuta cuando el Timer termina (después de 1.5 segundos)
+    //Metodo de cierre del JDialog
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Cierra el JDialog. Esto desbloquea la ejecución en el método girar() de Partida.java
         dispose();
     }
 }

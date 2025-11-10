@@ -141,14 +141,17 @@ JPasswordField contrasena;
         panelLI.add(contrasena);
     }
     
+    //Metodo para verificar el usuario para inicio de sesion
     private void iniciarSesion() {
         String nombre = nombreCuenta.getText().trim();
         char[] pass = contrasena.getPassword();
 
+        //Si no hay nada escrito en el espacio
         if (nombre.isBlank()) {
             JOptionPane.showMessageDialog(this, "Favor escriba un nombre.", "Error con Nombre", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        //Si no hay nada en la contraseña
         if (pass.length == 0) {
             JOptionPane.showMessageDialog(this, "Favor escriba la contraseña.", "Error con Contraseña", JOptionPane.WARNING_MESSAGE);
             return;
@@ -162,7 +165,7 @@ JPasswordField contrasena;
             return;
         }
 
-        // ✅ Inicia sesión con éxito
+        //Inicia sesion con exito
         JOptionPane.showMessageDialog(this, "¡Bienvenido, " + jugadorEncontrado.getNombre() + "!", "Inicio de Sesión Exitoso", JOptionPane.INFORMATION_MESSAGE);
         this.setVisible(false);
 

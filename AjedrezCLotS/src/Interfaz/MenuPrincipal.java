@@ -25,8 +25,8 @@ public final class MenuPrincipal extends JFrame{
     public JPanel panel;//Creamos un objeto panel para añadirle elementos
     Partida ventanaJuego;//JFrame de Partida
     MiCuenta ventanaMC;//JFrame de MiCuenta
-    private Jugador jugadorActivo; // 🔹 Nuevo atributo
-    private Jugadores listaJugadores;
+    private Jugador jugadorActivo; //Objeto Jugador
+    private Jugadores listaJugadores;//Objeto Jugadoes
 
 
     
@@ -86,7 +86,7 @@ public final class MenuPrincipal extends JFrame{
         btnJugar.setContentAreaFilled(false);
         btnJugar.setFocusPainted(false);
         btnJugar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnJugar.addActionListener(e -> abrirPartida());
+        btnJugar.addActionListener(e -> abrirPartida());//Action listener con lambda "e" parametro de entrada y "->" separador y "abrirPartida()" accion que realiza
         panel.add(btnJugar);
         
         //Creacion de boton Cuenta
@@ -114,11 +114,13 @@ public final class MenuPrincipal extends JFrame{
         panel.add(btnSalir);
     }
     
+    //Metodo para abrir una ventana de Seleccion de Jugador
     private void abrirPartida() {
-        SeleccionJugador seleccion = new SeleccionJugador(jugadorActivo, listaJugadores);
+        SeleccionJugador seleccion = new SeleccionJugador(jugadorActivo, listaJugadores);//Le pasas los parametro para que verifique que hay mas de un jugador
         seleccion.setVisible(true);
     }
 
+    //Metodo para abrir la ventana mi cuenta
     private void abrirMiCuenta() {
         if (ventanaMC == null) {
             ventanaMC = new MiCuenta(jugadorActivo);
@@ -126,6 +128,7 @@ public final class MenuPrincipal extends JFrame{
         ventanaMC.setVisible(true);
     }
 
+    //Metodo para cerrar ventana de menu principal
     private void confirmarSalida() {
         int opcion = JOptionPane.showConfirmDialog(this, "¿Seguro que deseas cerrar la cuenta?", "Cerrar Sesion", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
