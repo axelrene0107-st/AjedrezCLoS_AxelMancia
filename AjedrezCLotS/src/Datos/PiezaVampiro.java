@@ -4,9 +4,10 @@ import java.awt.Color;
 
 public class PiezaVampiro extends Pieza {
     
-    private static final int VIDA_BASE = 1;
-    private static final int SOLIDEZ_BASE = 1;
-    private static final int ATAQUE_BASE = 3;
+    // Estadísticas Actualizadas
+    private static final int VIDA_BASE = 4;
+    private static final int SOLIDEZ_BASE = 5; // Escudo muy alto
+    private static final int ATAQUE_BASE = 3; // Se mantiene
 
     public PiezaVampiro(Color color) {
         super("Vampiro", color, VIDA_BASE, SOLIDEZ_BASE, ATAQUE_BASE);
@@ -17,7 +18,7 @@ public class PiezaVampiro extends Pieza {
         int dr = Math.abs(r1 - r2);
         int dc = Math.abs(c1 - c2);
         
-        // El Vampiro se mueve exactamente 1 casilla en cualquier dirección.
+        // Movimiento de 1 casilla en cualquier dirección.
         return dr <= 1 && dc <= 1 && (dr + dc > 0);
     }
 }

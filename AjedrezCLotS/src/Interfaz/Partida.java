@@ -24,6 +24,12 @@ public class Partida extends JFrame {
     private int selectedRow = -1;
     private int selectedCol = -1;
     private Color turnoActual = Color.RED; // 🔴 El juego comienza con el jugador ROJO
+    
+    private Ruleta ruleta; // Vuelve al JDialog
+    private String piezaPermitida = null;
+    
+    private int girosDisponiblesRojo = 1;
+    private int girosDisponiblesAzul = 1;
 
     // Íconos de las piezas (se asume que están configurados para 6 imágenes)
     private ImageIcon muerteIcon;
@@ -49,7 +55,17 @@ public class Partida extends JFrame {
 
         cargarIconosDePiezas();
         iniciarComponentes();
-        colocarPiezasIniciales();
+        colocarPiezasIniciales(); 
+        ruleta = new Ruleta(this);
+        
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+                iniciarPrimerTurnoConSorteo(); // 👈 Ahora sí, ruleta al abrir la ventana
+            }
+        });
+
+ 
     }
     
     // --- LÓGICA DE CARGA DE PIEZAS (Se mantiene igual) ---
@@ -224,6 +240,7 @@ public class Partida extends JFrame {
 
     // --- LÓGICA DE MOVIMIENTO Y COMBATE (ACTUALIZADA) ---
     private void manejarClicCasilla(int targetRow, int targetCol) {
+        
         Pieza piezaEnDestino = tableroLogico[targetRow][targetCol];
         JButton targetCasilla = casillas[targetRow][targetCol];
     
@@ -232,6 +249,13 @@ public class Partida extends JFrame {
             if (piezaEnDestino != null) {
                 // 🛑 RESTRICCIÓN DE TURNO: Solo se puede seleccionar la pieza si es tu turno
                 if (piezaEnDestino.color.equals(turnoActual)) {
+                
+                    // 🛑 RESTRICCIÓN DE RULETA: Solo permite seleccionar la pieza sorteada
+                    if (!piezaEnDestino.getTipo().equals(piezaPermitida)) {
+                        JOptionPane.showMessageDialog(this, "¡Debes seleccionar una pieza de tipo " + piezaPermitida + "!", "Pieza Restringida", JOptionPane.WARNING_MESSAGE);
+                        return; // No permite la selección
+                    }
+
                     seleccionarPieza(targetCasilla, targetRow, targetCol);
                 } else {
                     JOptionPane.showMessageDialog(this, "No es el turno del jugador " + (turnoActual.equals(Color.RED) ? "ROJO" : "AZUL"), "Turno Incorrecto", JOptionPane.WARNING_MESSAGE);
@@ -344,6 +368,8 @@ public class Partida extends JFrame {
         // 3. Deselecciona y actualiza la GUI
         deseleccionarPieza();
         actualizarTableroGUI();
+        
+        verificarFinDeJuego();
     }
     
     private Color obtenerColorBaseCasilla(int row, int col) {
@@ -454,8 +480,148 @@ public class Partida extends JFrame {
         }
     }
     
-    private void cambiarTurno() {
-        turnoActual = turnoActual.equals(Color.RED) ? Color.BLUE : Color.RED;
-        System.out.println("\n--- Es el turno del jugador " + (turnoActual.equals(Color.RED) ? "ROJO" : "AZUL") + " ---\n");
+    private int contarPiezas(Color colorJugador) {
+        int contador = 0;
+        for (int fila = 0; fila < SIZE; fila++) {
+            for (int col = 0; col < SIZE; col++) {
+                Pieza p = tableroLogico[fila][col];
+                if (p != null && p.color.equals(colorJugador)) {
+                    contador++;
+                }
+            }
+        }
+        return contador;
     }
+    
+    private int calcularGirosDisponibles(Color colorJugador) {
+        int piezasIniciales = 6;
+        int piezasActuales = contarPiezas(colorJugador);
+        int piezasPerdidas = piezasIniciales - piezasActuales;
+
+        // 1 giro mínimo, y +1 por cada 2 piezas perdidas
+        int giros = 1 + (piezasPerdidas / 2);
+        return Math.min(giros, 3); // Máximo 3 giros
+    }
+    
+    // --- En Partida.java: Métodos ---
+
+    private void iniciarPrimerTurnoConSorteo() {
+        System.out.println("\n--- Es el turno del jugador ROJO ---");
+    
+        // El método girar() BLOQUEA la ejecución hasta que el JDialog se cierra
+        piezaPermitida = ruleta.girar(); 
+    
+        System.out.println("Pieza obligatoria para mover: " + piezaPermitida + "\n");
+    }
+
+    private void cambiarTurno() {
+        // Cambiar turno
+        turnoActual = turnoActual.equals(Color.RED) ? Color.BLUE : Color.RED;
+        System.out.println("\n--- Es el turno del jugador " + (turnoActual.equals(Color.RED) ? "ROJO" : "AZUL") + " ---");
+
+        // Calcular giros disponibles
+        int girosDisponibles = calcularGirosDisponibles(turnoActual);
+
+        // Mostrar al jugador
+        System.out.println("El jugador tiene " + girosDisponibles + " oportunidad(es) de giro de ruleta.");
+
+        // Intentar girar ruleta según las oportunidades disponibles
+        boolean piezaValidaEncontrada = false;
+
+        for (int intento = 1; intento <= girosDisponibles; intento++) {
+            System.out.println("Intento #" + intento);
+            String piezaSorteada = ruleta.girar();
+
+            if (tienePiezaDisponible(turnoActual, piezaSorteada)) {
+                piezaPermitida = piezaSorteada;
+                piezaValidaEncontrada = true;
+                break;
+            } else {
+                System.out.println("⚠️ El jugador no tiene piezas del tipo " + piezaSorteada + ". Se vuelve a girar...");
+            }
+        }
+
+        if (!piezaValidaEncontrada) {
+            // Si después de todos los giros no hay pieza válida, pierde el turno
+            piezaPermitida = null;
+            JOptionPane.showMessageDialog(this,
+                    "El jugador " + (turnoActual.equals(Color.RED) ? "ROJO" : "AZUL")
+                    + " no tiene piezas sorteadas disponibles. Pierde el turno.",
+                    "Turno perdido", JOptionPane.INFORMATION_MESSAGE);
+
+            cambiarTurno(); // Pasa directamente al otro jugador
+        } else {
+            System.out.println("Pieza obligatoria para mover: " + piezaPermitida);
+        }
+    }
+    
+    private boolean tienePiezaDisponible(Color colorJugador, String tipo) {
+        for (int fila = 0; fila < SIZE; fila++) {
+            for (int col = 0; col < SIZE; col++) {
+                Pieza p = tableroLogico[fila][col];
+                if (p != null && p.color.equals(colorJugador) && p.getTipo().equals(tipo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private void verificarFinDeJuego() {
+        int piezasRojas = contarPiezas(Color.RED);
+        int piezasAzules = contarPiezas(Color.BLUE);
+
+        if (piezasRojas == 0 || piezasAzules == 0) {
+            String ganador;
+
+            if (piezasRojas == 0 && piezasAzules == 0) {
+                ganador = "Empate — ambos jugadores perdieron todas sus piezas.";
+            } else if (piezasRojas == 0) {
+                ganador = "¡El jugador AZUL ha ganado!";
+            } else {
+                ganador = "¡El jugador ROJO ha ganado!";
+            }
+
+            // Mostrar mensaje final
+            JOptionPane.showMessageDialog(this, ganador, "Fin del Juego", JOptionPane.INFORMATION_MESSAGE);
+
+            // Preguntar si se desea reiniciar o salir
+            int opcion = JOptionPane.showConfirmDialog(
+                    this,
+                    "¿Deseas jugar otra partida?",
+                    "Juego terminado",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (opcion == JOptionPane.YES_OPTION) {
+                reiniciarPartida();
+            } else {
+                System.exit(0);
+            }
+        }
+    }
+    
+    private void reiniciarPartida() {
+        System.out.println("\n🔁 Reiniciando partida...");
+
+        // Reinicia la lógica del tablero
+        tableroLogico = new Pieza[SIZE][SIZE];
+        colocarPiezasIniciales();
+
+        // Reinicia variables de control
+        turnoActual = Color.RED;
+        piezaPermitida = null;
+
+        // Recalcular giros
+        girosDisponiblesRojo = 1;
+        girosDisponiblesAzul = 1;
+
+        actualizarTableroGUI();
+        repaint();
+
+        // Inicia de nuevo el sorteo
+        iniciarPrimerTurnoConSorteo();
+    }
+
+
 }

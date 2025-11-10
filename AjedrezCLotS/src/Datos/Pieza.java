@@ -65,4 +65,5 @@ public abstract class Pieza {
      * @return true si el patrón de movimiento es válido.
      */
     public abstract boolean esMovimientoValido(int r1, int c1, int r2, int c2);
+    
 }

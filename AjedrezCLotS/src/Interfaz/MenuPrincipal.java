@@ -16,7 +16,7 @@ import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
  *
  * @author axelr
  */
-public class MenuPrincipal extends JFrame{
+public final class MenuPrincipal extends JFrame{
     public JPanel panel;//Creamos un objeto panel para añadirle elementos
     Partida ventanaJuego;//JFrame de Partida
     MiCuenta ventanaMC;//JFrame de MiCuenta
@@ -26,7 +26,7 @@ public class MenuPrincipal extends JFrame{
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setTitle("Menu de Usuario");
         this.setLocationRelativeTo(null);
-        this.setMinimumSize(new Dimension(500, 500));       
+        this.setMinimumSize(new Dimension(500, 500));        
         iniciarComponentes();
     }
     
@@ -63,13 +63,13 @@ public class MenuPrincipal extends JFrame{
         JButton btnJugar= new JButton(iconJugar);//Creamos boton para iniciar la partida
         btnJugar.setBounds(170, 250, 150, 40);//Le asignamos sus dimensiones y posicion
         btnJugar.setIcon(new ImageIcon(iconJugar.getImage().getScaledInstance(220, 130, Image.SCALE_SMOOTH)));
-        panel.add(btnJugar);
-        ventanaJuego= new Partida();
+        panel.add(btnJugar);       
         //Accion del boton de jugar
         ActionListener accion1;
         accion1 = new ActionListener(){
             @Override
-            public void actionPerformed(ActionEvent e) {                
+            public void actionPerformed(ActionEvent e) {
+                ventanaJuego= new Partida();                
                 ventanaJuego.setVisible(true);                
             }
         };

@@ -4,9 +4,10 @@ import java.awt.Color;
 
 public class PiezaMuerte extends Pieza {
     
-    private static final int VIDA_BASE = 3;
-    private static final int SOLIDEZ_BASE = 2;
-    private static final int ATAQUE_BASE = 1;
+    // Estadísticas Actualizadas
+    private static final int VIDA_BASE = 3; // Se mantiene
+    private static final int SOLIDEZ_BASE = 1; // Escudo bajo
+    private static final int ATAQUE_BASE = 4;
 
     public PiezaMuerte(Color color) {
         super("Muerte", color, VIDA_BASE, SOLIDEZ_BASE, ATAQUE_BASE);
@@ -17,7 +18,7 @@ public class PiezaMuerte extends Pieza {
         int dr = Math.abs(r1 - r2);
         int dc = Math.abs(c1 - c2);
         
-        // La Muerte se mueve exactamente 1 casilla en cualquier dirección.
+        // Movimiento de 1 casilla en cualquier dirección.
         return dr <= 1 && dc <= 1 && (dr + dc > 0);
     }
 }

@@ -4,9 +4,10 @@ import java.awt.Color;
 
 public class PiezaLobo extends Pieza {
     
-    private static final int VIDA_BASE = 2;
-    private static final int SOLIDEZ_BASE = 0;
-    private static final int ATAQUE_BASE = 2;
+    // Estadísticas Actualizadas
+    private static final int VIDA_BASE = 5;
+    private static final int SOLIDEZ_BASE = 2; // Escudo
+    private static final int ATAQUE_BASE = 5;
 
     public PiezaLobo(Color color) {
         super("Lobo", color, VIDA_BASE, SOLIDEZ_BASE, ATAQUE_BASE);
@@ -17,8 +18,7 @@ public class PiezaLobo extends Pieza {
         int dr = Math.abs(r1 - r2);
         int dc = Math.abs(c1 - c2);
         
-        // El Lobo se mueve hasta 2 casillas en cualquier dirección.
-        // Se valida el patrón: ambos cambios (filas y columnas) deben ser <= 2.
+        // Movimiento de hasta 2 casillas en cualquier dirección.
         return dr <= 2 && dc <= 2 && (dr + dc > 0);
     }
 }
