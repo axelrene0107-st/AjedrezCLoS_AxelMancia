@@ -4,9 +4,8 @@ import java.awt.Color;
 
 public class PiezaLobo extends Pieza {
     
-    // Estadísticas Actualizadas
     private static final int VIDA_BASE = 5;
-    private static final int SOLIDEZ_BASE = 2; // Escudo
+    private static final int SOLIDEZ_BASE = 2; 
     private static final int ATAQUE_BASE = 5;
 
     public PiezaLobo(Color color) {
@@ -14,11 +13,11 @@ public class PiezaLobo extends Pieza {
     }
 
     @Override
-    public boolean esMovimientoValido(int r1, int c1, int r2, int c2) {
-        int dr = Math.abs(r1 - r2);
-        int dc = Math.abs(c1 - c2);
+    public boolean esMovimientoValido(int fila1, int columna1, int fila2, int columna2) {
+        int direccionFila = Math.abs(fila1 - fila2);
+        int direccionColumna = Math.abs(columna1 - columna2);
         
         // Movimiento de hasta 2 casillas en cualquier dirección.
-        return dr <= 2 && dc <= 2 && (dr + dc > 0);
+        return direccionFila <= 2 && direccionColumna <= 2 && (direccionFila + direccionColumna > 0);
     }
 }

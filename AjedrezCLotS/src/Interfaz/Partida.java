@@ -13,44 +13,41 @@ import javax.swing.border.LineBorder;
 import java.net.URL;
 
 public class Partida extends JFrame {
-    private static final int SIZE = 6;
-    private static final int TILE_SIZE = 80;
-    private JPanel panel;
-    private JButton[][] casillas;
-    private Pieza[][] tableroLogico;    
-    private JPanel panelPiezasRojasPerdidas;
-    private JPanel panelPiezasAzulesPerdidas;
-    private JTextArea areaMensajes;
+    private static final int SIZE = 6;//tamaño
+    private static final int TILE_SIZE = 80;//tamaño de las casillas
+    private JPanel panel;//El panel principal
+    private JButton[][] casillas;//Array de botones que imitan casilals
+    private Pieza[][] tableroLogico;//Array de objetos de la clase Pieza    
+    private JPanel panelPiezasRojasPerdidas;//Panel para las piezas Negras perdidas
+    private JPanel panelPiezasAzulesPerdidas;//Panel para las piezas blancas perdidas
+    private JTextArea areaMensajes;//Un textarea para los mensajes
     
-
-
-
-    // Variables de control de juego
-    private JButton casillaSeleccionada = null;
-    private int selectedRow = -1;
-    private int selectedCol = -1;
-    private Color turnoActual = Color.BLUE; 
-    JButton btnRendirse;
-    private JLabel barraJugadorBlanco;
-    private JLabel barraJugadorNegro;
-    private String nombreJugadorBlanco = "Jugador Blanco";
-    private String nombreJugadorNegro = "Computadora"; // o el nombre del oponente real
+    private JButton casillaSeleccionada = null;//Boton para la casilla seleccionada, inicia vacia.
+    private int selectedRow = -1;//Las filas son 6x6, pero su seleccion es de 0-5 entonces se les resta uno
+    private int selectedCol = -1;//Lo mismo con la columna
+    private Color turnoActual = Color.BLUE;//Guarda el turno actual como un color, en este caso es el azul(Blanco) despues el rojo(Negro) 
+    private JButton btnRendirse;//Boton de rendicion
+    private JLabel barraJugadorBlanco;//Barra para el jugador blanco
+    private JLabel barraJugadorNegro;//Barra para el jugador negro
+    private String nombreJugadorBlanco;//Nombre del jugador blanco
+    private String nombreJugadorNegro;//Nombre del negro
 
     
-    private Ruleta ruleta; // Vuelve al JDialog
-    private String piezaPermitida = null;
+    private Ruleta ruleta; //Objeto Ruleta
+    private String piezaPermitida = null;//String para el metodo de piezapermitida
     
+    //Contadores de giros por jugador
     private int girosDisponiblesRojo = 1;
     private int girosDisponiblesAzul = 1;
     
-    private JButton btnHabilidadEspecial;
-    private boolean modoInvocacion = false;
-    private java.util.List<Point> casillasInvocacion = null;
-    private boolean modoDrenaje = false;
-    private java.util.List<Point> casillasDrenaje = null;
+    //Parte de habilidad especial
+    private JButton btnHabilidadEspecial;//Boton para la habilidad especial
+    private boolean modoInvocacion = false;//Entre en modo invocacion en el caso de la muerte
+    private boolean modoDrenaje = false;//Entra en modo drenaje para el caso del vampiro
+    private java.util.List<Point> casillasInvocacion = null;//Lista para las casillas de invocacion
+    private java.util.List<Point> casillasDrenaje = null;//Lista para casillas de drenaje
 
-
-    // Íconos de las piezas (se asume que están configurados para 6 imágenes)
+    //Iconos de las piezas negras y blancas
     private ImageIcon muerteIcon;
     private ImageIcon vampiroIcon;
     private ImageIcon loboIcon;
@@ -60,81 +57,86 @@ public class Partida extends JFrame {
     private ImageIcon loboClaraIcon;
     private ImageIcon zombieClaraIcon;
     
+    //Los colores de movimientos y ataques, seran colores que indicaran las distintas caracteristicas de las piezas
     private static final Color COLOR_MOVIMIENTO_VALIDO = new Color(50, 200, 50, 100); // Verde semi-transparente
     private static final Color COLOR_ATAQUE_VALIDO = new Color(200, 50, 50, 100);    // Rojo semi-transparente
     private static final Color COLOR_ATAQUE_LARGO = new Color(160, 50, 200, 120); // Morado semitransparente
     private static final Color COLOR_SELECCIONADO = Color.YELLOW;
 
+    //Constructor de partida(los parametros son los nombres de los jugadores en la partida)
     public Partida(String nombreJugadorBlanco, String nombreJugadorNegro) {
         this.nombreJugadorBlanco = nombreJugadorBlanco;
         this.nombreJugadorNegro = nombreJugadorNegro;
+        //Para la pantalla
         setTitle("Vampire Wargame Chess");
         setSize(950, 680);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setMinimumSize(new Dimension(950, 680));
         setLayout(null);
-
+        //Matriz de objetos Pieza
         tableroLogico = new Pieza[SIZE][SIZE];
 
-        cargarIconosDePiezas();
-        iniciarComponentes();
-        colocarPiezasIniciales(); 
-        ruleta = new Ruleta(this);
+        //Metodos que se cargan por predeterminado
+        cargarIconosDePiezas();//Carga de los iconos
+        iniciarComponentes();//Inicia los componentes graficos 
+        colocarPiezasIniciales(); //Coloca las piezas
+        ruleta = new Ruleta(this);//Crea un nuevo dialog Ruleta
         
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowOpened(WindowEvent e) {
-                iniciarPrimerTurnoConSorteo(); // 👈 Ahora sí, ruleta al abrir la ventana
+                iniciarPrimerTurnoConSorteo();//Listener para la ventana lo que hace que inicie este metodo justo cuando se llama la ventana partida
             }
         });
 
  
     }
     
-    // --- LÓGICA DE CARGA DE PIEZAS (Se mantiene igual) ---
-    private void cargarIconosDePiezas() {
-        int iconSize = TILE_SIZE - 10; 
+    private void cargarIconosDePiezas() {//El metodo para cargar las imagenes como iconos para las piezas
+        int iconSize = TILE_SIZE - 10;//Tamaño de los iconos de las piezas
 
+        //asignacion de valores para cada uno de los iconos con el metodo cargarYredimensionarIcono; este devuelve un icon
         muerteIcon = cargarYRedimensionarIcono("Muerte.png", iconSize);
         vampiroIcon = cargarYRedimensionarIcono("Vampiro.png", iconSize);
         loboIcon = cargarYRedimensionarIcono("Lobo.png", iconSize);
-        zombieIcon = cargarYRedimensionarIcono("Zombie.png", iconSize); // 🧟‍♂️
+        zombieIcon = cargarYRedimensionarIcono("Zombie.png", iconSize); 
         
         muerteClaraIcon = cargarYRedimensionarIcono("Muerte_Blanco.png", iconSize);
         vampiroClaraIcon = cargarYRedimensionarIcono("Vampiro_Blanco.png", iconSize);
         loboClaraIcon = cargarYRedimensionarIcono("Lobo_Blanco.png", iconSize);
-        zombieClaraIcon = cargarYRedimensionarIcono("Zombie_Blanco.png", iconSize); // 🧟‍♀️
+        zombieClaraIcon = cargarYRedimensionarIcono("Zombie_Blanco.png", iconSize); 
     }
 
+    //Metodo par redimensionar, tiene como parametros un string con el nombre del archivo y su tamaño, por predeterminado es iconSize
     private ImageIcon cargarYRedimensionarIcono(String fileName, int size) {
-        ImageIcon originalIcon = null;
+        ImageIcon originalIcon = null;//Inicia originalIcon como null
         try {
-            URL url = Partida.class.getResource("/" + fileName);
-            if (url != null) {
-                originalIcon = new ImageIcon(url);
+            URL url = Partida.class.getResource("/" + fileName);//Busca el archivo desde la raiz
+            if (url != null) {//Si lo encuentra
+                originalIcon = new ImageIcon(url);//Asigna esa ubicacion al icono
             } else {
-                originalIcon = new ImageIcon(fileName);
+                originalIcon = new ImageIcon(fileName);//Si no la encuantra entonces le asigna el String del nombre
             }
 
-            if (originalIcon.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                 throw new Exception("Error al cargar la imagen: " + fileName);
+            if (originalIcon.getImageLoadStatus() != MediaTracker.COMPLETE) {//If por si no la encuentra
+                 throw new Exception("Error al cargar la imagen: " + fileName);//Tira el exception para ese error
             }
 
-            Image img = originalIcon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
-            return new ImageIcon(img);
+            Image img = originalIcon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);//Objeto imagen que recoge parametros para una imagen
+            return new ImageIcon(img);//retorna un nuevo incono con los parametros del objeto img
         } catch (Exception e) {
-            System.err.println("Advertencia: No se pudo cargar el ícono de la pieza " + fileName + ". " + e.getMessage());
-            return new ImageIcon();
+            System.err.println("Advertencia: No se pudo cargar el ícono de la pieza " + fileName + ". " + e.getMessage());//Caulquier otr excepcion, tira el error.
+            return new ImageIcon();//Devuelve un imageicon vacio
         }
     }
 
-    // --- LÓGICA DE INICIO DE PARTIDA (ACTUALIZADA con clases concretas) ---
+    //Metodo para colocar las piezas en el orden correcto Lobo-Vampiro-Muerte-Muerte-Vampiro-Lobo
     private void colocarPiezasIniciales() {
-        tableroLogico = new Pieza[SIZE][SIZE];
+        tableroLogico = new Pieza[SIZE][SIZE];//Se instancia la matriz de objetos pieza
 
-        // 🔴 JUGADOR ROJO (6 piezas: 2 Muerte, 2 Vampiro, 2 Lobo)
-        // Fila 0
+        // JUGADOR ROJO(NEGRO) (6 piezas: 2 Muerte, 2 Vampiro, 2 Lobo)
+        // Fila 0 (arriba)
         tableroLogico[0][0] = new PiezaLobo(Color.RED);
         tableroLogico[0][1] = new PiezaVampiro(Color.RED);
         tableroLogico[0][2] = new PiezaMuerte(Color.RED);
@@ -142,8 +144,8 @@ public class Partida extends JFrame {
         tableroLogico[0][4] = new PiezaVampiro(Color.RED);
         tableroLogico[0][5] = new PiezaLobo(Color.RED);
         
-        // 🔵 JUGADOR AZUL (Color.BLUE)
-        // Fila 5
+        // 🔵 JUGADOR AZUL(BLANCO)
+        // Fila 5 (Abajo)
         tableroLogico[5][0] = new PiezaLobo(Color.BLUE);
         tableroLogico[5][1] = new PiezaVampiro(Color.BLUE);
         tableroLogico[5][2] = new PiezaMuerte(Color.BLUE);
@@ -151,19 +153,20 @@ public class Partida extends JFrame {
         tableroLogico[5][4] = new PiezaVampiro(Color.BLUE);
         tableroLogico[5][5] = new PiezaLobo(Color.BLUE);
         
+        //Metodo para actualizar el Tablero
         actualizarTableroGUI();
     }
     
-    // El método getIconoPieza se mantiene igual, ya que usa el atributo color de la pieza.
+    //Funcion para conseguir un objeto ImageIcon, tiene un parametro de objeto Pieza
     private ImageIcon getIconoPieza(Pieza pieza) {
-        if (pieza.color.equals(Color.RED)) {
-            switch (pieza.getTipo()) { // Usa getTipo() ya que ahora es privada en Pieza
+        if (pieza.color.equals(Color.RED)) {//Si el color de la pieza obtenida es ihual a rojo(Negro)
+            switch (pieza.getTipo()) { //Switch para obtener pieza y retornar dependiendo de cual sea el objeto que seleccione
                 case "Muerte": return muerteIcon;
                 case "Vampiro": return vampiroIcon;
                 case "Lobo": return loboIcon;
-                case "Zombie": return zombieIcon; // 🧟‍♂️
+                case "Zombie": return zombieIcon; 
             }
-        } else if (pieza.color.equals(Color.BLUE)) {
+        } else if (pieza.color.equals(Color.BLUE)) {//Lo mismo pero si es el azul(Blanco)
             switch (pieza.getTipo()) {
                 case "Muerte": return muerteClaraIcon;
                 case "Vampiro": return vampiroClaraIcon;
@@ -171,27 +174,20 @@ public class Partida extends JFrame {
                 case "Zombie": return zombieClaraIcon; // 🧟‍♀️
             }
         }
-        return new ImageIcon();
+        return new ImageIcon();//Retorna el objeto icono
     }
 
-    // El resto de los métodos de inicialización (actualizarTableroGUI, iniciarComponentes, etc.)
-    // se mantienen igual.
-
+    //Metodo para actualizar tablero
     private void actualizarTableroGUI() {
         for (int row = 0; row < SIZE; row++) {
             for (int col = 0; col < SIZE; col++) {
                 JButton casilla = casillas[row][col];
                 Pieza pieza = tableroLogico[row][col];
-                
-                casilla.setIcon(null);
+                casilla.setIcon(null);//Vacia la casilla en la que estaba la pieza
 
-                if (pieza != null) {
+                if (pieza != null) {//Si el objeto pieza es vacio entonces obtiene la icono
                     ImageIcon icon = getIconoPieza(pieza);
                     casilla.setIcon(icon);
-                    // Opcional: Mostrar la vida restante/solidez en el texto para debug
-                    // casilla.setText("V:" + pieza.getVida() + "/S:" + pieza.getSolidez());
-                    // casilla.setHorizontalTextPosition(SwingConstants.CENTER);
-                    // casilla.setVerticalTextPosition(SwingConstants.BOTTOM);
                 }
             }
         }

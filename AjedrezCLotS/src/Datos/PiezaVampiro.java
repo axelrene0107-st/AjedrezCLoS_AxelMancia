@@ -15,11 +15,11 @@ public class PiezaVampiro extends Pieza {
     }
 
     @Override
-    public boolean esMovimientoValido(int r1, int c1, int r2, int c2) {
-        int dr = Math.abs(r1 - r2);
-        int dc = Math.abs(c1 - c2);       
+    public boolean esMovimientoValido(int fila1, int columna1, int fila2, int columna2) {
+        int direccionFila = Math.abs(fila1 - fila2);
+        int direccionColumna = Math.abs(columna1 - columna2);       
         // Movimiento de 1 casilla en cualquier dirección.
-        return dr <= 1 && dc <= 1 && (dr + dc > 0);
+        return direccionFila <= 1 && direccionColumna <= 1 && (direccionFila + direccionColumna > 0);
     }
     
     @Override
@@ -35,6 +35,6 @@ public class PiezaVampiro extends Pieza {
         objetivo.recibirDaño(1);
         this.vida = Math.min(this.vida + 1, VIDA_MAXIMA);
 
-        System.out.println("🩸 " + this.getTipo() + " absorbió vida de " + objetivo.getTipo());
+        System.out.println(this.getTipo() + " absorbió vida de " + objetivo.getTipo());
     }
 }
